@@ -6,7 +6,9 @@
 目标设备：MacBook Pro 13-inch 2017 / Intel i5 / Iris Plus 640 / 8GB / macOS 13.7.4。
 部署目标：Intel x86_64、macOS 13.0 及以上。
 
-**当前状态：第一轮源码适配，尚未经过 macOS 编译及 Ventura 实机验证，不是现成安装包。**
+**当前状态：Intel 云端编译、9 项 Swift 测试、2 项打包测试及安装包验证均已通过，已生成 DMG。Ventura 13.7.4 的实际录制、声音与导出仍需在目标电脑上验证。**
+
+[成功构建与安装包](https://github.com/lllwuwu25-alt/dogsc/actions/runs/39417629168)。
 
 ## 使用流程
 
@@ -35,7 +37,8 @@
 - 加入旧版 SwiftUI 的双值变化回调、初始回调、焦点样式、焦点范围内的键盘事件处理和视觉动画替代实现。
 - 为 Ventura 提供可暂停的主线程帧时钟；较新系统仍用原生 CADisplayLink。暂停预览时停止定时器。
 - Retina、缩放显示、多显示器窗口录制使用旧系统可取得的显示尺寸计算；录制对象 ID 仍严格保留。
-- 摄像头、麦克风、外接设备和连续互通相机使用对应系统版本的发现接口。
+- 摄像头、麦克风、外接设备和连续互通相机使用对应系统版本的发现接口。Ventura 的摄像头预览在主线程显示，较新系统保留原生后台渲染。
+- Ventura 的加减步进按钮使用单次点击，不启用新版系统的长按连发。
 - Ventura 的源预览缩略图使用一次性 Quartz 截图；显示器预览排除本 App 的窗口。
 - 保留现有 ScreenCaptureKit 系统声音回退；不在 Ventura 调用新版 Core Audio Tap。
 - 本地化在旧系统使用 Combine 通知，新系统继续保留 Observation 跟踪。
