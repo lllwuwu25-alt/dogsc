@@ -3,7 +3,7 @@ import SwiftUI
 
 @MainActor
 struct VenturaKeyDispatch {
-    let keys: Set<KeyEquivalent>
+    let keys: Set<DogSCKeyEquivalent>
     let phases: DogSCKeyPress.Phases
     let action: (DogSCKeyPress) -> DogSCKeyPress.Result
 
@@ -12,7 +12,7 @@ struct VenturaKeyDispatch {
     func handle(keyCode: UInt16, isRepeat: Bool, flags: NSEvent.ModifierFlags) -> Bool {
         if isRepeat && !phases.contains(.repeating) { return false }
         if !isRepeat && !phases.contains(.down) { return false }
-        let key: KeyEquivalent
+        let key: DogSCKeyEquivalent
         switch keyCode {
         case 36, 76: key = .return
         case 123: key = .leftArrow

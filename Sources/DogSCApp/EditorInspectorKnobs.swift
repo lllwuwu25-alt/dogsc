@@ -480,7 +480,7 @@ struct EditorMixerStrip: View {
         .appKeyboardFocus(in: Capsule(style: .continuous))
         .accessibilityLabel(String(format: appLocalized("%@启用"), appLocalized(title)))
         .accessibilityValue(appLocalized(muted ? "开关状态 · 关闭" : "开关状态 · 开启"))
-        .accessibilityAddTraits(.isToggle)
+        .dogscAccessibilityToggle()
         .accessibilityIdentifier("\(accessibilityStem).enabled")
         .help(appLocalized(detail))
     }

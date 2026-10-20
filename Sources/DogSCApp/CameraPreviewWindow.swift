@@ -17,6 +17,38 @@ enum RecordingCameraPreviewScalePolicy {
     }
 }
 
+/// Select the native thread-safe renderer on Sonoma and later. On Ventura,
+/// all legacy display-layer enqueue/flush calls run on the main queue.
+private final class CameraPreviewRenderer: @unchecked Sendable {
+    let requiresMainQueue: Bool
+    private let render: (CMSampleBuffer) -> Void
+
+    @MainActor
+    init(layer: AVSampleBufferDisplayLayer) {
+        if #available(macOS 14.0, *) {
+            requiresMainQueue = false
+            let renderer = layer.sampleBufferRenderer
+            render = { sample in
+                if renderer.status == .failed {
+                    renderer.flush(removingDisplayedImage: false, completionHandler: nil)
+                } else {
+                    renderer.enqueue(sample)
+                }
+            }
+        } else {
+            requiresMainQueue = true
+            render = { sample in
+                MainActor.assumeIsolated {
+                    if layer.status == .failed { layer.flush() }
+                    else { layer.enqueue(sample) }
+                }
+            }
+        }
+    }
+
+    func enqueue(_ sample: CMSampleBuffer) { render(sample) }
+}
+
 /// Thread-safe bridge from AVCaptureVideoDataOutput to the recording-page
 /// preview. Apple documents `sampleBufferRenderer` as safe to enqueue from a
 /// background thread. `DisplayImmediately` replaces any pending image instead
@@ -31,11 +63,13 @@ final class ImmediateCameraPreviewFrameSink: @unchecked Sendable {
         label: "cn.laogou.dogsc.camera-preview-renderer",
         qos: .userInteractive
     )
-    private var renderer: AVSampleBufferVideoRenderer?
+    private var renderer: CameraPreviewRenderer?
     private var pendingFrame: PendingFrame?
     private var drainIsScheduled = false
 
-    func attach(_ renderer: AVSampleBufferVideoRenderer?) {
+    @MainActor
+    func attach(_ layer: AVSampleBufferDisplayLayer?) {
+        let renderer = layer.map { CameraPreviewRenderer(layer: $0) }
         lock.lock()
         self.renderer = renderer
         if renderer == nil {
@@ -48,8 +82,10 @@ final class ImmediateCameraPreviewFrameSink: @unchecked Sendable {
 
     func enqueue(_ sampleBuffer: CMSampleBuffer) {
         var shouldScheduleDrain = false
+        var queue = renderQueue
         lock.lock()
-        if renderer != nil {
+        if let renderer {
+            if renderer.requiresMainQueue { queue = .main }
             // A real-time preview needs the newest image, never an ordered
             // backlog. Replacing this one retained sample also bounds the
             // preview's IOSurface ownership independently of renderer speed.
@@ -62,7 +98,7 @@ final class ImmediateCameraPreviewFrameSink: @unchecked Sendable {
         lock.unlock()
 
         guard shouldScheduleDrain else { return }
-        renderQueue.async { [weak self] in
+        queue.async { [weak self] in
             self?.drainNewestFrames()
         }
     }
@@ -87,12 +123,8 @@ final class ImmediateCameraPreviewFrameSink: @unchecked Sendable {
 
     private func display(
         _ sampleBuffer: CMSampleBuffer,
-        using renderer: AVSampleBufferVideoRenderer
+        using renderer: CameraPreviewRenderer
     ) {
-        if renderer.status == .failed {
-            renderer.flush(removingDisplayedImage: false, completionHandler: nil)
-            return
-        }
         // This is a real-time source, not an offline producer that can pause
         // until the renderer drains. Apple's AVQueuedSampleBufferRendering
         // contract explicitly permits enqueueing while `isReady` is false;
@@ -394,7 +426,7 @@ private final class CameraPreviewSurface: NSView {
         apertureBorderLayer.lineWidth = 1
         layer?.addSublayer(apertureBorderLayer)
         previewLayer.videoGravity = .resizeAspectFill
-        frameSink.attach(previewLayer.sampleBufferRenderer)
+        frameSink.attach(previewLayer)
         videoClipLayer.masksToBounds = true
         videoClipLayer.cornerCurve = .circular
         videoClipLayer.addSublayer(previewLayer)

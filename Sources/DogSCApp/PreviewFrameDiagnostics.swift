@@ -127,7 +127,9 @@ final class PreviewFrameDiagnostics: @unchecked Sendable {
             defer { lock.withLock { pendingRenderInfo -= 1 } }
             guard let info = try? handle.task.waitUntilCompleted() else { return }
             update(frame) {
-                $0.compileMS = info.kernelCompileTime * 1_000
+                if #available(macOS 14.0, *) {
+                    $0.compileMS = info.kernelCompileTime * 1_000
+                }
                 $0.executionMS = info.kernelExecutionTime * 1_000
                 $0.passes = info.passCount
                 $0.pixels = info.pixelsProcessed

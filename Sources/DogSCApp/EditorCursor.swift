@@ -87,9 +87,15 @@ extension View {
     /// Visual edges must remain at the authored times during move/snap/trim.
     /// Fade only the ink: a centre-anchored scale moves both endpoints away
     /// from the snapping guide and a drag shadow spills into the next lane.
+    @ViewBuilder
     func editorClipDragFeedback(_ dragged: Bool) -> some View {
-        animation(RecorderMotion.reduces ? nil : .easeOut(duration: 0.12)) { clip in
-            clip.opacity(dragged ? 0.9 : 1)
+        if #available(macOS 14.0, *) {
+            animation(RecorderMotion.reduces ? nil : .easeOut(duration: 0.12)) { clip in
+                clip.opacity(dragged ? 0.9 : 1)
+            }
+        } else {
+            opacity(dragged ? 0.9 : 1)
+                .animation(RecorderMotion.reduces ? nil : .easeOut(duration: 0.12), value: dragged)
         }
     }
 

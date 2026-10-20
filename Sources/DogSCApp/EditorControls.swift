@@ -443,7 +443,7 @@ struct EditorToggle: View {
             .focused($hasFocus)
             .accessibilityLabel(appLocalized(title))
             .accessibilityValue(appLocalized(isOn ? "开关状态 · 开启" : "开关状态 · 关闭"))
-            .accessibilityAddTraits(.isToggle)
+            .dogscAccessibilityToggle()
         } else {
             Button {
                 withAnimation(SpringMotion.snappy) {
@@ -454,7 +454,7 @@ struct EditorToggle: View {
             }
             .buttonStyle(EditorToggleButtonStyle(isOn: isOn, showsTitle: false, isFocused: hasFocus))
             .focused($hasFocus)
-            .accessibilityAddTraits(.isToggle)
+            .dogscAccessibilityToggle()
             .accessibilityValue(appLocalized(isOn ? "开关状态 · 开启" : "开关状态 · 关闭"))
         }
     }
@@ -708,7 +708,7 @@ struct EditorNumericStepControl: View {
                 .font(.appUI(size: 10, weight: .bold))
         }
         .buttonStyle(EditorStepButtonStyle())
-        .buttonRepeatBehavior(repeatsSteps ? .enabled : .disabled)
+        .dogscButtonRepeatBehavior(repeatsSteps)
         .disabled(!isAvailable)
         .help(help)
         .accessibilityHidden(true)

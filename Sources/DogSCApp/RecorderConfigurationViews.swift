@@ -326,7 +326,7 @@ final class RecorderCameraPreviewView: NSView {
         layer?.backgroundColor = RecorderStyle.chromeNSColor.withAlphaComponent(0.06).cgColor
         displayLayer.videoGravity = .resizeAspectFill
         layer?.addSublayer(displayLayer)
-        sink.attach(displayLayer.sampleBufferRenderer)
+        sink.attach(displayLayer)
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     override func viewDidChangeEffectiveAppearance() {

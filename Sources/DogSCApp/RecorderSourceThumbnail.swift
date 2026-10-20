@@ -54,8 +54,8 @@ enum RecorderSourceThumbnail {
                 else { return nil }
                 return (entry[kCGWindowNumber as String] as? NSNumber)?.uint32Value
             }
-            image = CGWindowListCreateImageFromArray(display.frame,
-                VenturaQuartzWindowList.makeArray(windowIDs: ids), [.bestResolution])
+            image = CGImage(windowListFromArrayScreenBounds: display.frame,
+                windowArray: VenturaQuartzWindowList.makeArray(windowIDs: ids), imageOption: [.bestResolution])
         } else { return nil }
         guard let image, let context = CGContext(data: nil, width: width, height: height,
             bitsPerComponent: 8, bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(),

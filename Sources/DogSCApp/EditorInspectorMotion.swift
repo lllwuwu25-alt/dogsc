@@ -198,12 +198,12 @@ private struct RollingGlyph: View {
                     if let previous {
                         glyph(previous)
                             .offset(y: -travel * progress)
-                            .opacity(max(0, 1 - progress * 3))
+                            .opacity(Double(max(CGFloat.zero, 1 - progress * 3)))
                             .blur(radius: 6 * progress)
                     }
                     glyph(shown)
                         .offset(y: travel * (1 - progress))
-                        .opacity(min(1, progress * 2.4))
+                        .opacity(Double(min(CGFloat(1), progress * 2.4)))
                         .blur(radius: 8 * (1 - min(progress, 1)))
                 }
             }

@@ -267,7 +267,9 @@ final class CaptureOutput: NSObject, SCStreamOutput, @unchecked Sendable {
         // 10 秒或不分片稳定。fragmented 能力保留（异常退出可恢复，
         // 代价是异常时最多丢失最后 10 秒）。
         writer.movieFragmentInterval = CMTime(seconds: 10, preferredTimescale: 600)
-        writer.initialMovieFragmentInterval = CMTime(seconds: 10, preferredTimescale: 600)
+        if #available(macOS 14.0, *) {
+            writer.initialMovieFragmentInterval = CMTime(seconds: 10, preferredTimescale: 600)
+        }
 
         let settings: [String: Any]
         let bitrate: Int

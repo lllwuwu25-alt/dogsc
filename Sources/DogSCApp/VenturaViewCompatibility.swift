@@ -43,17 +43,42 @@ extension View {
     }
 
     func dogscOnKeyPress(
-        keys: Set<KeyEquivalent>, phases: DogSCKeyPress.Phases = [.down, .repeating],
+        keys: Set<DogSCKeyEquivalent>, phases: DogSCKeyPress.Phases = [.down, .repeating],
         isFocused: Bool? = nil, action: @escaping (DogSCKeyPress) -> DogSCKeyPress.Result
     ) -> some View {
         modifier(DogSCKeyPressModifier(keys: keys, phases: phases, explicitFocus: isFocused, action: action))
     }
 
     func dogscOnKeyPress(
-        _ key: KeyEquivalent, action: @escaping () -> DogSCKeyPress.Result
+        _ key: DogSCKeyEquivalent, action: @escaping () -> DogSCKeyPress.Result
     ) -> some View {
         dogscOnKeyPress(keys: [key], phases: .down) { _ in action() }
     }
+
+    @ViewBuilder
+    func dogscAccessibilityToggle() -> some View {
+        if #available(macOS 14.0, *) { accessibilityAddTraits(.isToggle) }
+        else { self }
+    }
+
+    @ViewBuilder
+    func dogscButtonRepeatBehavior(_ enabled: Bool) -> some View {
+        if #available(macOS 14.0, *) { buttonRepeatBehavior(enabled ? .enabled : .disabled) }
+        else { self }
+    }
+}
+
+/// SwiftUI only added KeyEquivalent's Hashable/Equatable conformance in Sonoma.
+/// Character provides the same key identity on Ventura without that conformance.
+struct DogSCKeyEquivalent: Hashable, Sendable {
+    let character: Character
+    init(_ key: KeyEquivalent) { character = key.character }
+    var native: KeyEquivalent { KeyEquivalent(character) }
+    static let upArrow = Self(.upArrow)
+    static let downArrow = Self(.downArrow)
+    static let leftArrow = Self(.leftArrow)
+    static let rightArrow = Self(.rightArrow)
+    static let `return` = Self(.return)
 }
 
 struct DogSCKeyPress {
@@ -63,7 +88,7 @@ struct DogSCKeyPress {
         static let down = Self(rawValue: 1)
         static let repeating = Self(rawValue: 2)
     }
-    let key: KeyEquivalent
+    let key: DogSCKeyEquivalent
     let modifiers: EventModifiers
 }
 
@@ -78,7 +103,7 @@ private struct DogSCKeyPressModifier: ViewModifier {
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.isFocused) private var environmentFocused
     @State private var childFocused = false
-    let keys: Set<KeyEquivalent>
+    let keys: Set<DogSCKeyEquivalent>
     let phases: DogSCKeyPress.Phases
     let explicitFocus: Bool?
     let action: (DogSCKeyPress) -> DogSCKeyPress.Result
@@ -87,10 +112,10 @@ private struct DogSCKeyPressModifier: ViewModifier {
     func body(content: Content) -> some View {
         if #available(macOS 14.0, *) {
             content.onKeyPress(
-                keys: keys,
+                keys: Set(keys.map(\.native)),
                 phases: phases.contains(.repeating) ? [.down, .repeat] : .down
             ) { press in
-                action(DogSCKeyPress(key: press.key, modifiers: press.modifiers)) == .handled
+                action(DogSCKeyPress(key: DogSCKeyEquivalent(press.key), modifiers: press.modifiers)) == .handled
                     ? .handled : .ignored
             }
         } else {
