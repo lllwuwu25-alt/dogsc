@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(CoreGraphics)
+import CoreGraphics
+#endif
 
 /// Geometry fallback for ScreenCaptureKit before filter scale metadata existed.
 /// Display selection is used only for resolution, never to replace a requested
