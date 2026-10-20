@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-"""Reject wrong-CPU builds or embedded code that raises the deployment floor."""
+"""Reject wrong-CPU builds, broken code signatures, or embedded code that
+raises the deployment floor."""
 import pathlib
 import plistlib
+import re
 import subprocess
 import sys
 
@@ -29,6 +31,81 @@ def version_tuple(version):
     return (parts + (0, 0, 0))[:3]
 
 
+def signature_summary(path):
+    """Return (TeamIdentifier, set of code directory flags) for signed code."""
+    result = subprocess.run(
+        ["codesign", "-d", "--verbose=4", str(path)],
+        capture_output=True,
+        text=True,
+    )
+    text = result.stderr
+    team = re.search(r"^TeamIdentifier=(.+)$", text, re.MULTILINE)
+    flags = re.search(
+        r"^CodeDirectory .*?flags=0x[0-9a-f]+\(([^)]*)\)", text, re.MULTILINE
+    )
+    return (
+        team.group(1).strip() if team else "unknown",
+        {flag for flag in flags.group(1).split(",")} if flags and flags.group(1) else set(),
+    )
+
+
+def entitlements(path):
+    """Return the entitlements of signed code as a dictionary."""
+    result = subprocess.run(
+        ["codesign", "-d", "--entitlements", ":-", str(path)],
+        capture_output=True,
+    )
+    if result.returncode != 0 or not result.stdout.strip():
+        return {}
+    try:
+        return plistlib.loads(result.stdout)
+    except plistlib.InvalidFileException:
+        return {}
+
+
+def verify_signatures(bundle):
+    """Catch the ad-hoc + hardened-runtime mix that dyld refuses to load.
+
+    Hardened runtime sets CS_REQUIRE_LV, so dyld only loads libraries carrying
+    the process's Team ID. An ad-hoc process has no Team ID, so the bundled
+    Sparkle.framework is rejected at launch with "mapped file has no Team ID
+    and is not a platform binary" and the app dies before main(). Opting out
+    with com.apple.security.cs.disable-library-validation is accepted.
+    """
+    team, flags = signature_summary(bundle)
+    library_validation_disabled = entitlements(bundle).get(
+        "com.apple.security.cs.disable-library-validation"
+    ) is True
+    if (
+        team in ("not set", "unknown")
+        and "runtime" in flags
+        and not library_validation_disabled
+    ):
+        raise ValueError(
+            "Ad-hoc signature carries the hardened runtime, which blocks dyld "
+            "from loading the bundled Sparkle.framework at launch. Sign ad-hoc "
+            "without --options runtime, or use a Developer ID identity for "
+            "every component."
+        )
+    sparkle = bundle / "Contents/Frameworks/Sparkle.framework"
+    if not sparkle.is_dir() or team in ("not set", "unknown"):
+        return
+    for path in sorted(sparkle.rglob("*")):
+        if not path.is_file() or "Mach-O" not in run("file", "-b", str(path)):
+            continue
+        component_team, _ = signature_summary(path)
+        if component_team != team:
+            raise ValueError(
+                f"Bundled code is not signed by the app's team "
+                f"({component_team!r} vs {team!r}): {path}"
+            )
+
+
+def team_description(bundle):
+    team, _ = signature_summary(bundle)
+    return "ad-hoc" if team in ("not set", "unknown") else team
+
+
 def verify(bundle):
     info = plistlib.loads((bundle / "Contents/Info.plist").read_bytes())
     expected = {
@@ -42,6 +119,7 @@ def verify(bundle):
             raise ValueError(f"Unexpected {key}: {info.get(key)!r}")
     if "SUFeedURL" in info:
         raise ValueError("Upstream automatic update feed must not be bundled")
+    verify_signatures(bundle)
     binary = bundle / "Contents/MacOS/DogSC"
     if run("lipo", "-archs", str(binary)).split() != ["x86_64"]:
         raise ValueError("The main executable must be Intel x86_64 only")
@@ -62,7 +140,10 @@ def verify(bundle):
         count += 1
     if count == 0:
         raise ValueError("No Mach-O executables found")
-    print(f"Verified {count} Intel Mach-O files; deployment floor <= macOS 13.0; update feed isolated.")
+    print(
+        f"Verified {count} Intel Mach-O files; deployment floor <= macOS 13.0; "
+        f"update feed isolated; signing identity {team_description(bundle)}."
+    )
 
 
 if __name__ == "__main__":

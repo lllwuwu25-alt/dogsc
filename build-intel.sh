@@ -20,8 +20,28 @@ staging_dir="$(mktemp -d "${TMPDIR:-/tmp/}dogsc-intel.XXXXXX")"
 trap 'rm -rf "$staging_dir"' EXIT
 app="$staging_dir/DogSC Intel.app"
 
+# The hardened runtime sets the library-validation flag, so dyld loads only
+# libraries that carry the same Team ID. An ad-hoc signature ("-") has no Team
+# ID at all, which makes dyld reject our own Sparkle.framework at launch:
+#   Library not loaded: @rpath/Sparkle.framework/Versions/B/Sparkle
+#   mapped file has no Team ID and is not a platform binary
+# so hardened runtime is requested only for a real identity, where every
+# component is re-signed with that identity's Team ID anyway.
+sign_code() {
+  if [[ "$identity" == "-" ]]; then
+    codesign --force --sign - "$@"
+  else
+    codesign --force --options runtime --timestamp --sign "$identity" "$@"
+  fi
+}
+
+# Ventura ships an older Swift runtime than the one Xcode 26.3 compiles
+# against. With the system dylib, MainActor.assumeIsolated traps inside AppKit
+# callbacks ("Incorrect actor executor assumption") and the app dies on the
+# first monitor/key/timer callback, e.g. the moment recording starts. Linking
+# the toolchain's stdlib statically keeps compiler and runtime in sync.
 xcrun swift build -c release --scratch-path "$scratch_dir" \
-  --triple x86_64-apple-macosx13.0 --product DogSC
+  --triple x86_64-apple-macosx13.0 --static-swift-stdlib --product DogSC
 binary_dir="$(xcrun swift build -c release --scratch-path "$scratch_dir" \
   --triple x86_64-apple-macosx13.0 --show-bin-path)"
 sparkle="$scratch_dir/artifacts/sparkle/Sparkle/Sparkle.xcframework/macos-arm64_x86_64/Sparkle.framework"
@@ -45,18 +65,16 @@ xcrun swift-stdlib-tool --copy --scan-executable "$app/Contents/MacOS/DogSC" \
   --destination "$app/Contents/Frameworks"
 for library in "$app/Contents/Frameworks/"*.dylib; do
   [[ -f "$library" ]] || continue
-  codesign --force --options runtime --sign "$identity" "$library"
+  sign_code "$library"
 done
 framework="$app/Contents/Frameworks/Sparkle.framework"
 version="$framework/Versions/B"
-codesign --force --options runtime --sign "$identity" "$version/XPCServices/Installer.xpc"
-codesign --force --options runtime --preserve-metadata=entitlements --sign "$identity" \
-  "$version/XPCServices/Downloader.xpc"
+sign_code "$version/XPCServices/Installer.xpc"
+sign_code "$version/XPCServices/Downloader.xpc" --preserve-metadata=entitlements
 for component in "$version/Autoupdate" "$version/Updater.app" "$framework"; do
-  codesign --force --options runtime --sign "$identity" "$component"
+  sign_code "$component"
 done
-codesign --force --options runtime --entitlements Resources/DogSC.entitlements \
-  --sign "$identity" "$app"
+sign_code "$app" --entitlements Resources/DogSC.entitlements
 codesign --verify --deep --strict "$app"
 python3 scripts/verify-intel-bundle.py "$app"
 

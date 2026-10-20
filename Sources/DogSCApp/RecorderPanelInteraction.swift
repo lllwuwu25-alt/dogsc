@@ -57,12 +57,15 @@ final class RecorderPanelPointerRegion {
         self.enabled = enabled
         if enabled, localMonitor == nil {
             let events: NSEvent.EventTypeMask = [.mouseMoved, .leftMouseUp, .rightMouseUp, .otherMouseUp]
+            // Ventura's Swift runtime does not mark AppKit's event-monitor
+            // callback as the main actor, so MainActor.assumeIsolated traps
+            // there. The refresh is a pure side effect, so hop instead.
             localMonitor = NSEvent.addLocalMonitorForEvents(matching: events) { [weak self] event in
-                MainActor.assumeIsolated { self?.refresh() }
+                Task { @MainActor in self?.refresh() }
                 return event
             }
             globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: events) { [weak self] _ in
-                MainActor.assumeIsolated { self?.refresh() }
+                Task { @MainActor in self?.refresh() }
             }
         } else if !enabled {
             if let localMonitor { NSEvent.removeMonitor(localMonitor) }

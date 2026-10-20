@@ -13,7 +13,7 @@ on:
       - "scripts/**"
       - ".github/workflows/intel-ventura.yml"
 permissions:
-  contents: read
+  contents: write
 concurrency:
   group: intel-ventura-${{ github.ref }}
   cancel-in-progress: true
@@ -58,3 +58,20 @@ jobs:
             intel-build.log
           if-no-files-found: ignore
           retention-days: 14
+      # Artifacts need an authenticated account to download, so the same build
+      # is also attached to a pre-release. Anyone with the repository open can
+      # then fetch the DMG without a token.
+      - name: Publish installable build as pre-release
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="intel-build-${GITHUB_RUN_NUMBER}"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" dist/intel/*.dmg dist/intel/*.zip --clobber
+          else
+            gh release create "$tag" dist/intel/*.dmg dist/intel/*.zip \
+              --title "DogSC Intel build ${GITHUB_RUN_NUMBER}" \
+              --notes "Automated Intel/Ventura build from ${GITHUB_SHA}." \
+              --prerelease --latest=false
+          fi

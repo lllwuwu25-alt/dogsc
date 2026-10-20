@@ -934,9 +934,43 @@ extension AppModel {
                 onScreenWindowsOnly: true
             )
             hasVerifiedScreenRecordingPermission = true
+            UserDefaults.standard.removeObject(forKey: Self.screenRecordingRelaunchKey)
         } catch {
             hasVerifiedScreenRecordingPermission = false
             setRequiredPermissionOnboardingCompleted(false)
+            // Ventura answers CGPreflightScreenCaptureAccess() as soon as the
+            // switch flips, but keeps the capture decision for the lifetime of
+            // the process. A grant that landed while DogSC was running looks
+            // missing until the next launch, so restart once instead of
+            // polling a stale denial until the user gives up.
+            if captureReadiness.hasScreenRecordingPermission {
+                relaunchAfterScreenRecordingGrant()
+            }
+        }
+    }
+
+    private static let screenRecordingRelaunchKey = "permissions.screen-recording-relaunch"
+
+    /// A relaunch is the only way to pick up a Screen Recording grant that was
+    /// made while this process was running. The attempt counter is persisted so
+    /// a genuinely missing grant cannot turn into a restart loop.
+    private func relaunchAfterScreenRecordingGrant() {
+        let attempts = UserDefaults.standard.integer(forKey: Self.screenRecordingRelaunchKey)
+        guard attempts < 2 else { return }
+        UserDefaults.standard.set(attempts + 1, forKey: Self.screenRecordingRelaunchKey)
+        let helper = Process()
+        helper.executableURL = URL(fileURLWithPath: "/bin/sh")
+        helper.arguments = ["-c", "sleep 1; /usr/bin/open -n \"$1\"", "sh",
+                            Bundle.main.bundleURL.path]
+        do {
+            try helper.run()
+        } catch {
+            UserDefaults.standard.set(0, forKey: Self.screenRecordingRelaunchKey)
+            return
+        }
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(400))
+            NSApplication.shared.terminate(nil)
         }
     }
 
