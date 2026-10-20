@@ -53,7 +53,7 @@ def verify(bundle):
         seen.add(path.resolve())
         if "Mach-O" not in run("file", "-b", str(path)):
             continue
-        subprocess.run(["lipo", "-verify_arch", "x86_64", str(path)], check=True)
+        subprocess.run(["lipo", str(path), "-verify_arch", "x86_64"], check=True)
         versions = minimum_versions(run("otool", "-arch", "x86_64", "-l", str(path)))
         if not versions:
             raise ValueError(f"Missing macOS deployment target: {path}")
