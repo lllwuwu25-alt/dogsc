@@ -28,13 +28,7 @@ private final class CameraPreviewRenderer: @unchecked Sendable {
         if #available(macOS 14.0, *) {
             requiresMainQueue = false
             let renderer = layer.sampleBufferRenderer
-            render = { sample in
-                if renderer.status == .failed {
-                    renderer.flush(removingDisplayedImage: false, completionHandler: nil)
-                } else {
-                    renderer.enqueue(sample)
-                }
-            }
+            render = Self.backgroundRender(renderer)
         } else {
             requiresMainQueue = true
             render = { sample in
@@ -42,6 +36,22 @@ private final class CameraPreviewRenderer: @unchecked Sendable {
                     if layer.status == .failed { layer.flush() }
                     else { layer.enqueue(sample) }
                 }
+            }
+        }
+    }
+
+    // A non-Sendable closure inherits its creation context's actor. Form the
+    // modern callback here, outside the main-actor initializer, because AV's
+    // native renderer explicitly supports enqueueing from a background queue.
+    @available(macOS 14.0, *)
+    nonisolated private static func backgroundRender(
+        _ renderer: AVSampleBufferVideoRenderer
+    ) -> (CMSampleBuffer) -> Void {
+        { sample in
+            if renderer.status == .failed {
+                renderer.flush(removingDisplayedImage: false, completionHandler: nil)
+            } else {
+                renderer.enqueue(sample)
             }
         }
     }
