@@ -4,7 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "DogSC",
-    platforms: [.macOS(.v14)],
+    platforms: [.macOS(.v13)],
     products: [
         .library(name: "RecorderCore", targets: ["RecorderCore"]),
         .executable(name: "DogSC", targets: ["DogSCApp"]),
@@ -19,6 +19,16 @@ let package = Package(
         .target(
             name: "RecorderCore",
             path: "Sources/RecorderCore"
+        ),
+        .testTarget(
+            name: "RecorderCoreCompatibilityTests",
+            dependencies: ["RecorderCore"],
+            path: "Tests/RecorderCoreCompatibilityTests"
+        ),
+        .testTarget(
+            name: "DogSCAppCompatibilityTests",
+            dependencies: ["DogSCApp"],
+            path: "Tests/DogSCAppCompatibilityTests"
         ),
         .executableTarget(
             name: "DogSCApp",

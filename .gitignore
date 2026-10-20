@@ -13,3 +13,5 @@ DerivedData/
 *.dogscproject/
 *.silkyproject/
 /open-check-project.command
+dist/
+__pycache__/
