@@ -36,6 +36,9 @@ final class AppUpdateController: ObservableObject {
     }
 
     var availabilityDescription: String {
+        if Bundle.main.bundleIdentifier == "cn.laogou.dogsc.intel" {
+            return "Intel 兼容版采用独立更新；当前不会安装原项目的 ARM 版本。"
+        }
         if isFormalRelease {
             return automaticallyChecksForUpdates
                 ? "每天自动检查 GitHub Release；发现新版后可直接下载、替换并重新打开。"

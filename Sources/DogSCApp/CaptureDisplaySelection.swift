@@ -317,7 +317,7 @@ private struct DisplaySelectionOverlay: View {
         }
         .padding(8)
         .foregroundStyle(RecorderStyle.ink)
-        .focusEffectDisabled()
+        .dogscFocusEffectDisabled()
         .fixedSize()
         .recorderSurface(radius: 30, castsShadow: true)
     }

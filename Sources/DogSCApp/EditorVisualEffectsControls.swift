@@ -226,11 +226,11 @@ private struct ScreenFrameMetadataField: View {
                             lineWidth: 0.75
                         )
                 }
-                .focusEffectDisabled()
+                .dogscFocusEffectDisabled()
                 .appKeyboardFocusScrollTarget(isFocused: isFocused)
         }
         .onAppear { draft = currentValue }
-        .onChange(of: isFocused) { _, focused in
+        .dogscOnChange(of: isFocused) { _, focused in
             if focused {
                 draft = currentValue
                 ScreenFrameEditorCommand.beginMetadataEditing(
@@ -241,7 +241,7 @@ private struct ScreenFrameMetadataField: View {
                 commit()
             }
         }
-        .onChange(of: draft) { _, value in
+        .dogscOnChange(of: draft) { _, value in
             guard isFocused else { return }
             ScreenFrameEditorCommand.previewMetadata(
                 value,
@@ -249,7 +249,7 @@ private struct ScreenFrameMetadataField: View {
                 store: editorStore
             )
         }
-        .onChange(of: currentValue) { _, value in
+        .dogscOnChange(of: currentValue) { _, value in
             if !isFocused { draft = value }
         }
     }
@@ -352,8 +352,8 @@ private struct ScreenFrameMiniature: View {
                                 y: outer.minY + toolbarHeight / 2
                             )
                             .mask(
-                                UnevenRoundedRectangle(
-                                    cornerRadii: RectangleCornerRadii(
+                                DogSCUnevenRoundedRectangle(
+                                    cornerRadii: DogSCCornerRadii(
                                         topLeading: 5,
                                         bottomLeading: 0,
                                         bottomTrailing: 0,

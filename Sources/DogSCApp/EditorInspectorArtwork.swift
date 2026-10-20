@@ -147,7 +147,7 @@ struct EditorOpeningStage: View {
             }
         }
         .animation(SpringMotion.hover, value: sequence.isEnabled)
-        .onChange(of: sequence) { _, _ in startDate = Date() }
+        .dogscOnChange(of: sequence) { _, _ in startDate = Date() }
     }
 
     private func scene(time: Double) -> some View {

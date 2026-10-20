@@ -261,13 +261,13 @@ struct CanvasPreview: View {
                     }
                 }
                 .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
-                .onChange(of: liveCanvasSize, initial: true) { _, newSize in
+                .dogscOnChange(of: liveCanvasSize, initial: true) { _, newSize in
                     // 持续跟踪最新实际尺寸（含拖动期间的逐 tick 值）；拖动
                     // 起手时的冻结基准从中读取，松手后下一次拖动才能拿到
                     // 已经更新过的起点。
                     restCanvasSize = newSize
                 }
-                .onChange(of: isSplitterResizing) { _, resizing in
+                .dogscOnChange(of: isSplitterResizing) { _, resizing in
                     splitterResizeFrozenCanvasSize = resizing ? restCanvasSize : nil
                 }
         }
@@ -339,17 +339,17 @@ struct CanvasPreview: View {
             guard !Task.isCancelled else { return }
             resolvedStickerImages = images
         }
-        .onChange(of: playbackController.isPlaying) { _, isPlaying in
+        .dogscOnChange(of: playbackController.isPlaying) { _, isPlaying in
             if isPlaying {
                 hoveredCanvasSelection = nil
             }
         }
-        .onChange(of: editorStore.interaction?.selection) { _, selection in
+        .dogscOnChange(of: editorStore.interaction?.selection) { _, selection in
             if selection != directCanvasManipulationSelection, isDirectCanvasManipulation {
                 clearCanvasManipulationPresentation()
             }
         }
-        .onChange(of: isEditorActive) { _, active in
+        .dogscOnChange(of: isEditorActive) { _, active in
             if !active { playbackPlanCache.invalidate() }
         }
         .onDisappear {

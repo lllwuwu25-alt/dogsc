@@ -214,7 +214,7 @@ struct RecorderInputGlyph: View {
         Image(systemName: enabled ? on : off)
             .font(.system(size: size, weight: .medium))
             .foregroundStyle(enabled ? RecorderStyle.ink : RecorderStyle.faint)
-            .contentTransition(.symbolEffect(.replace))
+            .dogscSymbolReplacement()
             .frame(width: 44, height: 44)
             .animation(RecorderMotion.quick, value: enabled)
     }

@@ -125,7 +125,7 @@ final class ScreenRecorder: NSObject, ObservableObject, SCStreamDelegate {
             )
             filter = surfaceFilter.filter
             includedEditorWindowIDs = surfaceFilter.editorWindowIDs
-            let pixelScale = max(CGFloat(filter.pointPixelScale), 1)
+            let pixelScale = ScreenCaptureCompatibility.displayScale(filter: filter, display: display)
 
             if configuration.source == .area {
                 guard let area = configuration.area?.constrained(),
@@ -155,16 +155,10 @@ final class ScreenRecorder: NSObject, ObservableObject, SCStreamDelegate {
                 throw ScreenRecorderError.noWindow
             }
             filter = SCContentFilter(desktopIndependentWindow: window)
-            let pixelScale = max(CGFloat(filter.pointPixelScale), 1)
-            // The window frame is expressed in global logical points. The
-            // filter owns the exact captured content rect and its point-to-pixel
-            // scale, including macOS scaled display modes. Use that pair so the
-            // writer surface describes captured content rather than UI geometry.
-            let contentSize = filter.contentRect.size
-            let logicalWidth = contentSize.width > 0 ? contentSize.width : window.frame.width
-            let logicalHeight = contentSize.height > 0 ? contentSize.height : window.frame.height
-            sourceWidth = max(Int((logicalWidth * pixelScale).rounded()), 2)
-            sourceHeight = max(Int((logicalHeight * pixelScale).rounded()), 2)
+            let dimensions = ScreenCaptureCompatibility.windowSize(
+                filter: filter, window: window, displays: content.displays)
+            sourceWidth = dimensions.width
+            sourceHeight = dimensions.height
         case .device:
             throw ScreenRecorderError.unsupportedSource
         }
@@ -205,8 +199,10 @@ final class ScreenRecorder: NSObject, ObservableObject, SCStreamDelegate {
         // remain separate ownership boundaries.
         streamConfiguration.width = streamSurfaceDimensions.width
         streamConfiguration.height = streamSurfaceDimensions.height
-        streamConfiguration.captureResolution = NativeScreenRecordingBackendPolicy
-            .captureResolution(for: configuration.source)
+        if #available(macOS 14.0, *) {
+            streamConfiguration.captureResolution = NativeScreenRecordingBackendPolicy
+                .captureResolution(for: configuration.source)
+        }
         // Ask ScreenCaptureKit for the same hardware-native NV12 layout that
         // H.264 consumes. A 4096x2304 BGRA stream moved about 2.25 GiB/s at
         // 60 fps before encoding and visibly reduced WindowServer cadence on a
@@ -223,7 +219,9 @@ final class ScreenRecorder: NSObject, ObservableObject, SCStreamDelegate {
             streamConfiguration.captureDynamicRange = .SDR
         }
         streamConfiguration.scalesToFit = true
-        streamConfiguration.preservesAspectRatio = true
+        if #available(macOS 14.0, *) {
+            streamConfiguration.preservesAspectRatio = true
+        }
         if let sourceRect {
             streamConfiguration.sourceRect = sourceRect
         }

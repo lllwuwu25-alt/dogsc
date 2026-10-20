@@ -724,6 +724,6 @@ private struct FirstUseTourButtonStyle: ButtonStyle {
             .contentShape(RoundedRectangle(cornerRadius: 9))
             .onHover { hovered = $0 }
             .animation(.easeOut(duration: 0.12), value: hovered)
-            .focused($focused).focusEffectDisabled()
+            .focused($focused).dogscFocusEffectDisabled()
     }
 }

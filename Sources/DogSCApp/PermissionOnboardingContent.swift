@@ -87,7 +87,7 @@ struct RequiredRecordingPermissionView: View {
                     .frame(maxWidth: .infinity).frame(height: 34)
                 }
                 .buttonStyle(PermissionActionButtonStyle(primary: true, focused: isEntryButtonFocused))
-                .focused($isEntryButtonFocused).focusEffectDisabled()
+                .focused($isEntryButtonFocused).dogscFocusEffectDisabled()
                 .firstUseTourTarget("permission.finish", in: .permissions, highlight: .rounded(10))
                 .modifier(introReveal(3))
             }
@@ -107,7 +107,7 @@ struct RequiredRecordingPermissionView: View {
         .firstUseTour(.permissions)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(RecorderAccessibilityID.permissionGate)
-        .onChange(of: model.permissionTourAccess, initial: true) { _, access in
+        .dogscOnChange(of: model.permissionTourAccess, initial: true) { _, access in
             FirstUseTourController.controller(for: .permissions).updatePermissions(access)
         }
         .task(id: presentation.isTourReady) {
@@ -191,7 +191,7 @@ struct RequiredRecordingPermissionView: View {
                         .frame(width: 92, height: 34)
                 }
                 .buttonStyle(PermissionActionButtonStyle(focused: focusedPermission == permission))
-                .focused($focusedPermission, equals: permission).focusEffectDisabled()
+                .focused($focusedPermission, equals: permission).dogscFocusEffectDisabled()
                 .accessibilityLabel("打开\(permission.title)设置")
             }
         }

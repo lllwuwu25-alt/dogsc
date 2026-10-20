@@ -75,7 +75,7 @@ struct EditorWallpaperAccordion: View {
                     .contentShape(shape)
             }
             .buttonStyle(.editorThumbnail)
-            .focusEffectDisabled()
+            .dogscFocusEffectDisabled()
             .onHover { inside in
                 if inside { hoveredID = group.id }
                 else if hoveredID == group.id { hoveredID = nil }

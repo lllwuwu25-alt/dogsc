@@ -162,19 +162,19 @@ struct ExportSheet: View {
             exporter.resetResultForNewExportSelection()
             prepareSuggestedOutputURLIfNeeded()
         }
-        .onChange(of: selectedOutputURL) { _, _ in
+        .dogscOnChange(of: selectedOutputURL) { _, _ in
             resetExportCompletionIfNeeded()
         }
-        .onChange(of: editorStore.project.exportSettings) { _, _ in
+        .dogscOnChange(of: editorStore.project.exportSettings) { _, _ in
             resetExportCompletionIfNeeded()
         }
-        .onChange(of: editorStore.project.exportSettings.frameRate) { _, _ in
+        .dogscOnChange(of: editorStore.project.exportSettings.frameRate) { _, _ in
             guard selectedOutputKind == .video,
                   customOutputBaseName == nil,
                   !exporter.isExporting else { return }
             refreshSuggestedOutputURL()
         }
-        .onChange(of: selectedOutputKind) { _, _ in
+        .dogscOnChange(of: selectedOutputKind) { _, _ in
             guard !exporter.isExporting else { return }
             exporter.resetResultForNewExportSelection()
             refreshSuggestedOutputURL()
@@ -182,7 +182,7 @@ struct ExportSheet: View {
         .onReceive(NotificationCenter.default.publisher(for: .appLanguageDidChange)) { _ in
             refreshAutomaticOutputNameIfNeeded()
         }
-        .onChange(of: isEditingOutputName) { _, editing in
+        .dogscOnChange(of: isEditingOutputName) { _, editing in
             if !editing { refreshAutomaticOutputNameIfNeeded() }
         }
         .sheet(isPresented: $showsSupportSheet) { AppSupportSheet() }
@@ -349,10 +349,10 @@ struct ExportSheet: View {
                     .focused($outputNameFocused)
                     .onSubmit { _ = commitOutputNameEditing() }
                     .onExitCommand { cancelOutputNameEditing() }
-                    .onChange(of: outputNameDraft) { _, _ in
+                    .dogscOnChange(of: outputNameDraft) { _, _ in
                         outputNameError = nil
                     }
-                    .onChange(of: outputNameFocused) { _, focused in
+                    .dogscOnChange(of: outputNameFocused) { _, focused in
                         guard !focused, isEditingOutputName else { return }
                         if outputFileNameValidationError(outputNameDraft) == nil {
                             _ = commitOutputNameEditing()

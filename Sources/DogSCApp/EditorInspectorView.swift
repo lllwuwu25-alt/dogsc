@@ -148,7 +148,7 @@ struct EditorInspectorView: View {
 
     var body: some View {
         inspector
-        .onChange(of: editorStore.selection) { _, selection in
+        .dogscOnChange(of: editorStore.selection) { _, selection in
             switch selection {
             case .screen:
                 selectedFrameInspectorTab = .layout
@@ -299,8 +299,8 @@ struct EditorInspectorView: View {
         .animation(SpringMotion.settle, value: showsFrameInspectorNavigation)
         .environment(\.consoleReveal, settledPageKey != consolePageKey)
         .task(id: consolePageKey) { await settleConsolePage(consolePageKey) }
-        .onChange(of: selectedFrameInspectorTab) { _, _ in frameTabDrift = nil }
-        .onChange(of: selectedInspector) { _, _ in frameTabDrift = nil }
+        .dogscOnChange(of: selectedFrameInspectorTab) { _, _ in frameTabDrift = nil }
+        .dogscOnChange(of: selectedInspector) { _, _ in frameTabDrift = nil }
     }
 
     /// Changes with the task (and the frame sub-page): the moment modules
@@ -1622,7 +1622,7 @@ struct EditorInspectorView: View {
                         .fixedSize(horizontal: true, vertical: false)
                         .appButtonKeyboardFocus(in: RoundedRectangle(cornerRadius: EditorInterfaceRadius.control, style: .continuous))
                         .accessibilityIdentifier("editor.inspector.zoom.show-track")
-                        .onKeyPress(keys: [.return], phases: .down) { press in
+                        .dogscOnKeyPress(keys: [.return], phases: .down) { press in
                             guard !isCropping,
                                   press.modifiers.intersection([.command, .control, .option, .shift]).isEmpty else {
                                 return .ignored

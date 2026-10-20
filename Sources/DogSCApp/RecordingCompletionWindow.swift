@@ -452,7 +452,7 @@ private struct RecordingCompletionCard: View {
         .appControlFocusAppearance()
         .accessibilityIdentifier("recording.completion.card")
         .task(id: model.recordingURL) { await loadPreview() }
-        .onChange(of: model.errorMessage) { _, _ in
+        .dogscOnChange(of: model.errorMessage) { _, _ in
             DispatchQueue.main.async { layoutChanged() }
         }
     }

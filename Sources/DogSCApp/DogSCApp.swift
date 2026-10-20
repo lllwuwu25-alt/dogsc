@@ -55,6 +55,7 @@ private struct DogSCModernApp: App {
 
 private struct DogSCSettingsScene: Scene {
     @ObservedObject private var guideAccess = FirstLaunchGuideAccess.shared
+    @ObservedObject private var localization = AppLocalization.shared
 
     var body: some Scene {
         // The normal app owns no SwiftUI-created main window. A dedicated
@@ -82,7 +83,7 @@ private struct DogSCSettingsScene: Scene {
                 }
             }
         }
-        .environment(\.locale, AppLocalization.shared.locale)
+        .environment(\.locale, localization.locale)
     }
 
 }
@@ -221,7 +222,7 @@ struct RecorderMainWindowRoot: View {
             windowLayout = .morph(from: islandSize, to: size, retaining: windowLayout)
             onWindowLayoutChange(windowLayout)
         }
-        withAnimation(RecorderMotion.morph, completionCriteria: .removed) {
+        dogscWithAnimation(RecorderMotion.morph, fallbackDuration: 0.8) {
             islandSize = size
         } completion: {
             guard revision == sizeAnimationRevision else { return }

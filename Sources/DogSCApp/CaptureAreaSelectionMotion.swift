@@ -5,7 +5,7 @@ import QuartzCore
 /// by the selector; this clock only moves its visible frame and toolbar.
 @MainActor
 final class CaptureAreaSelectionMotion: NSObject {
-    private var displayLink: CADisplayLink?
+    private var displayLink: DogSCDisplayLink?
     private var startedAt: CFTimeInterval = 0
     private var update: ((CGFloat) -> Void)?
     private let duration: CFTimeInterval = 0.32
@@ -14,7 +14,7 @@ final class CaptureAreaSelectionMotion: NSObject {
         stop()
         self.update = update
         startedAt = CACurrentMediaTime()
-        let link = window.displayLink(target: self, selector: #selector(tick(_:)))
+        let link = DogSCDisplayLink(window: window, target: self, selector: #selector(tick(_:)))
         displayLink = link
         link.add(to: .main, forMode: .common)
         update(0)
@@ -26,7 +26,7 @@ final class CaptureAreaSelectionMotion: NSObject {
         update = nil
     }
 
-    @objc private func tick(_ link: CADisplayLink) {
+    @objc private func tick(_ link: DogSCDisplayLink) {
         let time = min(max((CACurrentMediaTime() - startedAt) / duration, 0), 1)
         // Ease out without overshoot: selection edges must stay on screen.
         let progress = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion

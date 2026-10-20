@@ -43,7 +43,7 @@ struct MotionInspectorScopeHeader: View {
                 color: EditorTheme.onAccent.opacity(0.65)
             )
             .accessibilityIdentifier("motion.add-at-playhead")
-            .onKeyPress(keys: [.return], phases: .down) { press in
+            .dogscOnKeyPress(keys: [.return], phases: .down) { press in
                 guard isEnabled,
                       press.modifiers.intersection([.command, .control, .option, .shift]).isEmpty else {
                     return .ignored

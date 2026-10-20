@@ -234,7 +234,7 @@ struct SettingsFolderArtwork: View {
         ZStack(alignment: .bottom) {
             // Back panel with its tab, one opaque silhouette.
             ZStack(alignment: .topLeading) {
-                UnevenRoundedRectangle(topLeadingRadius: 3, topTrailingRadius: 3, style: .continuous)
+                DogSCUnevenRoundedRectangle(topLeadingRadius: 3, topTrailingRadius: 3, style: .continuous)
                     .frame(width: 17, height: 8)
                 RoundedRectangle(cornerRadius: 6, style: .continuous)
                     .frame(width: 42, height: 30)
@@ -586,12 +586,7 @@ private struct SettingsEditorMiniature: View {
             .padding(.top, 30)
             .padding(.bottom, 20)
             // Resetting the layout settles the window back into place.
-            .keyframeAnimator(initialValue: CGFloat(1), trigger: resetPulse) { view, scale in
-                view.scaleEffect(RecorderMotion.reduces ? 1 : scale)
-            } keyframes: { _ in
-                CubicKeyframe(0.94, duration: 0.14)
-                SpringKeyframe(1, duration: 0.5, spring: RecorderMotion.morphSpring)
-            }
+            .dogscPulse(trigger: resetPulse, depth: 0.94, duration: 0.5)
         }
         .frame(height: 238)
         .clipShape(frame)
@@ -688,7 +683,7 @@ private struct SettingsInputChip: View {
             HStack(spacing: 6) {
                 Image(systemName: isOn ? onSymbol : offSymbol)
                     .font(.system(size: 11.5, weight: .medium))
-                    .contentTransition(.symbolEffect(.replace))
+                    .dogscSymbolReplacement()
                     .foregroundStyle(isOn ? RecorderStyle.positiveInk : SettingsTheme.textFaint)
                     .frame(width: 16)
                 Text(appLocalized(title))
@@ -818,7 +813,7 @@ private struct SettingsMiniRecorderBar: View {
             }
             Image(systemName: symbol)
                 .font(.system(size: 10, weight: .medium))
-                .contentTransition(.symbolEffect(.replace))
+                .dogscSymbolReplacement()
                 .foregroundStyle(on ? RecorderStyle.ink : RecorderStyle.faint)
         }
         .frame(width: 26, height: 28)

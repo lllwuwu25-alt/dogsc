@@ -153,7 +153,7 @@ struct EditorTransactionalKnob: View {
         }
         .frame(maxWidth: .infinity)
         .opacity(isEnabled ? 1 : 0.4)
-        .onChange(of: editorStore.interaction?.id) { _, id in
+        .dogscOnChange(of: editorStore.interaction?.id) { _, id in
             // A deactivation or another edit may retire this gesture's draft.
             // Its eventual mouse-up must not commit a replacement interaction.
             if isDragging || isScrolling, id != parameterInteractionID { resetInput() }
@@ -201,9 +201,9 @@ struct EditorTransactionalKnob: View {
         .contentShape(Circle())
         .focusable(isEnabled)
         .focused($isFocused)
-        .focusEffectDisabled()
+        .dogscFocusEffectDisabled()
         .appKeyboardFocus(in: Circle(), color: EditorTheme.chrome(0.4), isFocused: isFocused)
-        .onKeyPress(keys: [.upArrow, .rightArrow, .downArrow, .leftArrow]) { press in
+        .dogscOnKeyPress(keys: [.upArrow, .rightArrow, .downArrow, .leftArrow]) { press in
             let up = press.key == .upArrow || press.key == .rightArrow
             step(up ? 1 : -1, coarse: press.modifiers.contains(.shift))
             return .handled
@@ -432,9 +432,9 @@ struct EditorMixerStrip: View {
         )
         .focusable(isEnabled && !muted)
         .focused($isFocused)
-        .focusEffectDisabled()
+        .dogscFocusEffectDisabled()
         .appKeyboardFocus(in: RoundedRectangle(cornerRadius: 12, style: .continuous), color: EditorTheme.chrome(0.4), isFocused: isFocused)
-        .onKeyPress(keys: [.upArrow, .downArrow]) { press in
+        .dogscOnKeyPress(keys: [.upArrow, .downArrow]) { press in
             let up = press.key == .upArrow
             _ = editorStore.beginContinuousInteraction(commandScope: commandScope)
             volume.wrappedValue = min(max(volume.wrappedValue + (up ? 1 : -1) * (press.modifiers.contains(.shift) ? 0.1 : 0.02), 0), 1)

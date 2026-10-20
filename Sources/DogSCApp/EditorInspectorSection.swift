@@ -281,7 +281,7 @@ struct EditorSegmentedControl<Option: Hashable>: View {
         .onHover { inside in
             if !inside { withAnimation(SpringMotion.hover) { hoveredOption = nil } }
         }
-        .onChange(of: selection) { _, _ in hoveredOption = nil }
+        .dogscOnChange(of: selection) { _, _ in hoveredOption = nil }
         .onDisappear { hoveredOption = nil }
     }
 }
@@ -423,7 +423,7 @@ private struct EditorTileSelectorButton: View {
                 isHovered = hovering
             }
         }
-        .onChange(of: isSelected) { _, _ in isHovered = false }
+        .dogscOnChange(of: isSelected) { _, _ in isHovered = false }
         .help(appLocalized(title))
         .accessibilityLabel(appLocalized(title))
         .accessibilityAddTraits(isSelected ? .isSelected : [])

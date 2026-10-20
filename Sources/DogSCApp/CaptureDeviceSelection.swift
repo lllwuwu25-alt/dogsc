@@ -327,7 +327,7 @@ private struct IOSDeviceSelectionOverlay: View {
                         HStack(spacing: 7) { Text("取消"); RecorderKeyHint(key: "esc") }
                     }
                     .buttonStyle(RecorderPillButtonStyle(kind: .quiet))
-                    .focusEffectDisabled()
+                    .dogscFocusEffectDisabled()
                     .help("按 Esc 取消")
 
                     Spacer()
@@ -339,7 +339,7 @@ private struct IOSDeviceSelectionOverlay: View {
                         }
                     }
                     .buttonStyle(RecorderPillButtonStyle(kind: .record))
-                    .focusEffectDisabled()
+                    .dogscFocusEffectDisabled()
                     .disabled(selectedDeviceID == nil)
                 }
                 .padding(.top, 12)
@@ -397,7 +397,7 @@ private struct DeviceSelectionRow: View {
         }
         .buttonStyle(EditorToolbarPressButtonStyle(cornerRadius: 14, cornerStyle: .circular, showsHover: false))
         .appButtonKeyboardFocus(in: RoundedRectangle(cornerRadius: 14))
-        .focusEffectDisabled()
+        .dogscFocusEffectDisabled()
         .onHover { hovering = $0 }
         .animation(RecorderMotion.fade, value: hovering)
         .animation(RecorderMotion.quick, value: selected)

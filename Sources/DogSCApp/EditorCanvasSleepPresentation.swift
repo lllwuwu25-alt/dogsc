@@ -23,7 +23,7 @@ final class EditorCanvasSleepPresentation: ObservableObject {
         let revision = animationRevision
         isAnimating = true
         let animation: Animation? = reducesMotion ? nil : .easeInOut(duration: 0.26)
-        withAnimation(animation, completionCriteria: .removed) {
+        dogscWithAnimation(animation, fallbackDuration: 0.30) {
             opacity = target
         } completion: { [weak self] in
             guard let self, self.animationRevision == revision else { return }

@@ -61,7 +61,7 @@ struct EditorColorPalette: View {
                     .padding(.horizontal, 10).frame(height: 32)
                     .background(EditorChoiceStyle.track, in: RoundedRectangle(cornerRadius: EditorInterfaceRadius.compact, style: .continuous))
                     .accessibilityLabel(String(format: appLocalized("%@十六进制值"), appLocalized(title)))
-                    .onChange(of: hexText) { _, text in
+                    .dogscOnChange(of: hexText) { _, text in
                         guard let color = HexColor(text), color != lastPreview else { return }
                         rebase(color)
                         onPreview(color)
@@ -74,8 +74,8 @@ struct EditorColorPalette: View {
             }
         }
         .padding(16).frame(width: 272)
-        .focusEffectDisabled()
-        .onChange(of: value) { _, color in
+        .dogscFocusEffectDisabled()
+        .dogscOnChange(of: value) { _, color in
             guard color != lastPreview else { return }
             rebase(color)
         }

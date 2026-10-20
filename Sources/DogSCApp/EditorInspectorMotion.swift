@@ -207,7 +207,7 @@ private struct RollingGlyph: View {
                         .blur(radius: 8 * (1 - min(progress, 1)))
                 }
             }
-        .onChange(of: character) { old, new in
+        .dogscOnChange(of: character) { old, new in
             guard old != new else { return }
             revision += 1
             let currentRevision = revision
@@ -220,7 +220,8 @@ private struct RollingGlyph: View {
             previous = old
             shown = new
             progress = 0
-            withAnimation(.spring(response: 0.66, dampingFraction: 0.74).delay(0.04 + Double(index) * 0.07), completionCriteria: .logicallyComplete) {
+            dogscWithAnimation(.spring(response: 0.66, dampingFraction: 0.74).delay(0.04 + Double(index) * 0.07),
+                fallbackDuration: 1.4 + Double(index) * 0.07) {
                 progress = 1
             } completion: {
                 guard revision == currentRevision else { return }

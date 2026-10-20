@@ -46,9 +46,8 @@ struct EditorTrimGrip: View {
         Capsule(style: .continuous)
             .fill(color)
             .frame(width: 2, height: height)
-            .animation(.easeOut(duration: 0.12)) { grip in
-                grip.opacity(hovered ? 1 : 0.75)
-            }
+            .opacity(hovered ? 1 : 0.75)
+            .animation(.easeOut(duration: 0.12), value: hovered)
             .padding(1)
             .background(EditorTheme.panelRaised, in: Capsule())
             .frame(width: 12)
@@ -120,7 +119,7 @@ final class EditorDragFrameCoalescer: NSObject {
     /// same time (a drag and a simultaneous gesture) never overwrite each other.
     private var pending: [String: () -> Void] = [:]
     private var order: [String] = []
-    private var link: CADisplayLink?
+    private var link: DogSCDisplayLink?
 
     func submit(file: String = #fileID, line: Int = #line, _ work: @escaping () -> Void) {
         let key = "\(file):\(line)"
@@ -130,12 +129,12 @@ final class EditorDragFrameCoalescer: NSObject {
             flush()
             return
         }
-        let link = screen.displayLink(target: self, selector: #selector(displayLinkDidFire(_:)))
+        let link = DogSCDisplayLink(screen: screen, target: self, selector: #selector(displayLinkDidFire(_:)))
         link.add(to: .main, forMode: .common)
         self.link = link
     }
 
-    @objc private func displayLinkDidFire(_ link: CADisplayLink) {
+    @objc private func displayLinkDidFire(_ link: DogSCDisplayLink) {
         flush()
     }
 

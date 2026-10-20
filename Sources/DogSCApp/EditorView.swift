@@ -272,11 +272,11 @@ struct EditorView: View {
         // 界面交互使用铂金强调；橙/红/绿只表达内容身份与录制状态。
         .tint(editorAccent)
         .font(.appUI(size: 13))
-        .focusEffectDisabled()
+        .dogscFocusEffectDisabled()
         .firstUseTour(.editor, enabled: !showsExportSheet && !isCropping && !isNamingStylePreset && !showsShortcutCheatsheet)
         .environment(\.editorIsActive, isEditorActive)
         .onDisappear { workspaceReflowTask?.cancel() }
-        .onChange(of: editorStore.selection) { _, selection in
+        .dogscOnChange(of: editorStore.selection) { _, selection in
             synchronizePrimarySegmentSelection(with: selection)
             explicitInspectorTab = EditorInspectorRouting
                 .explicitTabAfterSelectionChange(
@@ -427,14 +427,14 @@ struct EditorView: View {
         .task(id: mediaSession.lifecycle) {
             await prewarmReadyPointerTrack()
         }
-        .onChange(of: editorStore.project.audio) { _, audio in
+        .dogscOnChange(of: editorStore.project.audio) { _, audio in
             playbackController.updateAudio(
                 audio,
                 primarySegmentAudioOverrides:
                     editorStore.previewProject.timeline.primarySegmentAudioOverrides
             )
         }
-        .onChange(
+        .dogscOnChange(
             of: editorStore.previewProject.timeline.primarySegmentAudioOverrides
         ) { _, overrides in
             playbackController.updateAudio(
@@ -442,14 +442,14 @@ struct EditorView: View {
                 primarySegmentAudioOverrides: overrides
             )
         }
-        .onChange(of: timelineTrackVisibility) { _, visibility in
+        .dogscOnChange(of: timelineTrackVisibility) { _, visibility in
             AppPreferences.rememberTimelineTrackVisibility(
                 visibility,
                 for: editorStore.project
             )
             restoreSelectionAfterHidingTimelineTrack(visibility)
         }
-        .onChange(of: mediaSession.cameraTimingErrorMessage) { _, message in
+        .dogscOnChange(of: mediaSession.cameraTimingErrorMessage) { _, message in
             if let message { hostActions.reportError(message) }
         }
         .onAppear {
@@ -477,7 +477,7 @@ struct EditorView: View {
             guard let manager = note.object as? UndoManager, manager === undoManager else { return }
             presentUndoToast(redo: true, actionName: manager.undoActionName)
         }
-        .onChange(of: undoManager) { _, manager in
+        .dogscOnChange(of: undoManager) { _, manager in
             editorStore.attachUndoManager(manager)
             EditorMenuBridge.shared.attachEditor(undoManager: manager)
         }
@@ -927,7 +927,7 @@ struct EditorView: View {
                 .accessibilityIdentifier("editor.project.title-input")
                 .onSubmit(commitTitleEdit)
                 .onExitCommand(perform: cancelTitleEdit)
-                .onChange(of: titleFieldFocused) { _, focused in
+                .dogscOnChange(of: titleFieldFocused) { _, focused in
                     if !focused { commitTitleEdit() }
                 }
         } else {
@@ -1142,7 +1142,7 @@ struct EditorView: View {
             )
             .focusable(true)
             .focused($previewCanvasFocused)
-            .focusEffectDisabled()
+            .dogscFocusEffectDisabled()
             .onPasteCommand(of: [.image, .fileURL]) { _ in
                 addPastedSticker()
             }

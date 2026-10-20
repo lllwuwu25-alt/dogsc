@@ -7,7 +7,7 @@ import SwiftUI
 /// throughout the handoff; there is no empty frame or spring tail.
 @MainActor
 final class RecordingCompletionTransition: NSObject {
-    private var displayLink: CADisplayLink?
+    private var displayLink: DogSCDisplayLink?
     private var startedAt: CFTimeInterval = 0
     private var duration: CFTimeInterval = 0.32
     private var update: ((TimeInterval) -> Void)?
@@ -60,7 +60,7 @@ final class RecordingCompletionTransition: NSObject {
         }
         update?(0)
         startedAt = CACurrentMediaTime()
-        let link = window.displayLink(target: self, selector: #selector(tick(_:)))
+        let link = DogSCDisplayLink(window: window, target: self, selector: #selector(tick(_:)))
         displayLink = link
         link.add(to: .main, forMode: .common)
         // Back must complete while runModal owns the AppKit event loop.
@@ -74,7 +74,7 @@ final class RecordingCompletionTransition: NSObject {
         completion = nil
     }
 
-    @objc private func tick(_ link: CADisplayLink) {
+    @objc private func tick(_ link: DogSCDisplayLink) {
         let elapsed = min(max(CACurrentMediaTime() - startedAt, 0), duration)
         update?(elapsed)
         if elapsed >= duration {

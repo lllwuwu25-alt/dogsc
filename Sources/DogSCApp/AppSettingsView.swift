@@ -118,19 +118,19 @@ struct AppSettingsView: View {
         .ignoresSafeArea(.container, edges: .top)
         .tint(SettingsTheme.mint)
         .appControlFocusAppearance()
-        .onChange(of: appearancePreference) { _, _ in
+        .dogscOnChange(of: appearancePreference) { _, _ in
             AppPreferences.applyAppearancePreferenceToOpenWindows()
         }
-        .onChange(of: recordingCameraPreviewShape) { _, _ in
+        .dogscOnChange(of: recordingCameraPreviewShape) { _, _ in
             NotificationCenter.default.post(
                 name: .recordingCameraPreviewShapeDidChange,
                 object: nil
             )
         }
-        .onChange(of: recordsSystemAudioByDefault) { _, enabled in
+        .dogscOnChange(of: recordsSystemAudioByDefault) { _, enabled in
             WindowCoordinator.setDefaultSystemAudioRecordingEnabled(enabled)
         }
-        .onChange(of: recordsMicrophoneByDefault) { _, enabled in
+        .dogscOnChange(of: recordsMicrophoneByDefault) { _, enabled in
             WindowCoordinator.setDefaultMicrophoneRecordingEnabled(enabled)
         }
         .onAppear {
@@ -138,7 +138,7 @@ struct AppSettingsView: View {
             refreshPermissionStates()
             updateController.startIfEligible()
         }
-        .onChange(of: navigation.selectedSection) { _, section in
+        .dogscOnChange(of: navigation.selectedSection) { _, section in
             if section == .permissions { refreshPermissionStates() }
         }
         .onReceive(

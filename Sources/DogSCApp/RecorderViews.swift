@@ -238,13 +238,13 @@ struct RecordingBar: View {
                 isPaused: model.isRecordingPaused
             )
         }
-        .onChange(of: model.recorder.liveMeasurement) { _, measurement in
+        .dogscOnChange(of: model.recorder.liveMeasurement) { _, measurement in
             qualityWarningMonitor.consume(
                 measurement: measurement,
                 isPaused: model.isRecordingPaused
             )
         }
-        .onChange(of: model.isRecordingPaused) { _, isPaused in
+        .dogscOnChange(of: model.isRecordingPaused) { _, isPaused in
             qualityWarningMonitor.consume(
                 measurement: model.recorder.liveMeasurement,
                 isPaused: isPaused
@@ -341,7 +341,7 @@ struct RecordingBar: View {
             width: 36, height: 36, cornerRadius: 18, highlightOpacity: 0.05, action: action) {
             Image(systemName: icon).font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(RecorderStyle.ink)
-                .contentTransition(.symbolEffect(.replace))
+                .dogscSymbolReplacement()
                 .frame(width: 36, height: 36)
         }
     }
@@ -414,7 +414,7 @@ private struct RecordingIndicator: View {
             .animation(breathes ? .easeInOut(duration: 0.9).repeatForever(autoreverses: true) : .easeOut(duration: 0.15),
                        value: dimmed)
             .onAppear { dimmed = breathes }
-            .onChange(of: breathes) { _, value in dimmed = value }
+            .dogscOnChange(of: breathes) { _, value in dimmed = value }
             .accessibilityHidden(true)
     }
 }

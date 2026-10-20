@@ -42,12 +42,13 @@ extension EnvironmentValues {
 
 private struct AppControlFocusAppearance: ViewModifier {
     @ObservedObject private var visibility = AppKeyboardFocusVisibility.shared
+    @ObservedObject private var localization = AppLocalization.shared
     @State private var isMounted = false
 
     func body(content: Content) -> some View {
         content
-            .focusEffectDisabled()
-            .environment(\.locale, AppLocalization.shared.locale)
+            .dogscFocusEffectDisabled()
+            .environment(\.locale, localization.locale)
             .environment(\.appShowsKeyboardFocus, visibility.isVisible)
             .onAppear {
                 guard !isMounted else { return }
@@ -71,6 +72,7 @@ private struct AppButtonKeyboardFocusCue<Outline: InsettableShape>: ViewModifier
         content
             .focused($hasFocus)
             .modifier(AppKeyboardFocusCue(outline: outline, color: color, explicitFocus: hasFocus))
+            .preference(key: DogSCKeyboardFocusKey.self, value: hasFocus)
     }
 }
 
@@ -91,6 +93,7 @@ private struct AppKeyboardFocusCue<Outline: InsettableShape>: ViewModifier {
             }
         }
         .appKeyboardFocusScrollTarget(isFocused: explicitFocus ?? isFocused)
+        .preference(key: DogSCKeyboardFocusKey.self, value: isEnabled && (explicitFocus ?? isFocused))
     }
 }
 

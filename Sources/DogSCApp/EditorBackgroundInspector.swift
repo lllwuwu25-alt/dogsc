@@ -60,7 +60,7 @@ struct EditorBackgroundInspector: View {
                     with: editorStore.project.canvas.backgroundSource
                 )
             }
-            .onChange(of: editorStore.project.canvas.backgroundSource) { _, source in
+            .dogscOnChange(of: editorStore.project.canvas.backgroundSource) { _, source in
                 synchronizeBackgroundNavigation(with: source)
             }
     }
@@ -117,7 +117,7 @@ struct EditorBackgroundInspector: View {
                 )
                 await systemWallpaperCatalog.monitorChanges()
             }
-            .onChange(of: systemWallpaperCatalog.assets) { _, _ in
+            .dogscOnChange(of: systemWallpaperCatalog.assets) { _, _ in
                 synchronizeSystemWallpaperSelection(
                     with: editorStore.project.canvas.backgroundSource
                 )
@@ -225,7 +225,7 @@ struct EditorBackgroundInspector: View {
                         }
                 }
                 .buttonStyle(.editorThumbnail)
-                .focusEffectDisabled()
+                .dogscFocusEffectDisabled()
                 .help("\(displayName) · \(variantName)")
                 .accessibilityLabel(String(format: appLocalized("%@，%@"), displayName, variantName))
                 .accessibilityAddTraits(isSelected ? .isSelected : [])

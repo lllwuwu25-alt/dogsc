@@ -1143,7 +1143,7 @@ struct EditorTimelineView: View {
                 }
                 }
                 .onAppear { timelineContentWidth = contentWidth }
-                .onChange(of: contentWidth) { _, newValue in
+                .dogscOnChange(of: contentWidth) { _, newValue in
                     timelineContentWidth = newValue
                 }
             }
@@ -1174,7 +1174,7 @@ struct EditorTimelineView: View {
         }
         .animation(EditorSwapTiming.layout, value: timelineLabelsCollapsed)
         .frame(height: timelineHeight)
-        .onChange(of: preferredPanelHeight, initial: true) { _, height in
+        .dogscOnChange(of: preferredPanelHeight, initial: true) { _, height in
             // Live window resizing must follow the pointer, without repeatedly
             // starting the track-expansion animation or disabling gestures.
             let animate = lastHeightReportLayout == layout
@@ -1184,7 +1184,7 @@ struct EditorTimelineView: View {
         // The floating island beneath supplies the lit material.
         // The parent freezes the preview raster during workspace reflow; the
         // timeline may animate its layout without issuing intermediate renders.
-        .onChange(of: editorStore.project.timeline) { _, _ in
+        .dogscOnChange(of: editorStore.project.timeline) { _, _ in
             // A ripple edit can remove the SwiftUI view that owned the current
             // mouse sequence before `onEnded` arrives. End every local gesture
             // together with the structural timeline change; otherwise a dead
@@ -1237,10 +1237,10 @@ struct EditorTimelineView: View {
                 if !stillExists { self.hoveredMotionClip = nil }
             }
         }
-        .onChange(of: editorStore.interaction?.id) { _, id in
+        .dogscOnChange(of: editorStore.interaction?.id) { _, id in
             if let owned = timelineInteractionID, owned != id { cancelActiveTimelineGesture() }
         }
-        .onChange(of: editorStore.selection) { _, selection in
+        .dogscOnChange(of: editorStore.selection) { _, selection in
             if selectedCameraSyncAnchorID != nil {
                 dismissCameraSyncSelection()
             }
@@ -1252,7 +1252,7 @@ struct EditorTimelineView: View {
                 return
             }
         }
-        .onChange(of: cameraSyncAnchors) { _, anchors in
+        .dogscOnChange(of: cameraSyncAnchors) { _, anchors in
             guard let selectedCameraSyncAnchorID,
                   anchors.contains(where: { $0.id == selectedCameraSyncAnchorID }) else {
                 self.selectedCameraSyncAnchorID = nil
@@ -1260,11 +1260,11 @@ struct EditorTimelineView: View {
                 return
             }
         }
-        .onChange(of: isCameraSyncEditing) { _, isEditing in
+        .dogscOnChange(of: isCameraSyncEditing) { _, isEditing in
             if !isEditing { dismissCameraSyncSelection() }
         }
-        .onChange(of: isSnappingEnabled) { _, _ in timelineSnap.reset() }
-        .onChange(of: isHoverPreviewEnabled) { _, isEnabled in
+        .dogscOnChange(of: isSnappingEnabled) { _, _ in timelineSnap.reset() }
+        .dogscOnChange(of: isHoverPreviewEnabled) { _, isEnabled in
             hoverPreviewGate.isEnabled = isEnabled
             if !isEnabled {
                 playbackController.endHoverPreview()
@@ -1292,7 +1292,7 @@ struct EditorTimelineView: View {
             // drag outcome and must clear the transient source state.
             endPrimarySegmentDrag()
         }
-        .onChange(of: windowDeactivationRevision) { _, _ in
+        .dogscOnChange(of: windowDeactivationRevision) { _, _ in
             // EDT-015/016: store-owned drafts were already cancelled at this
             // boundary, but the timeline's own drag and sync states were not.
             // End them together so no marker remains focused and no segment

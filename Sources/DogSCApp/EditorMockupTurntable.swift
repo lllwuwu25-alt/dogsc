@@ -44,9 +44,9 @@ struct EditorMockupTurntable: View {
             .gesture(spin)
             .focusable()
             .focused($isFocused)
-            .focusEffectDisabled()
+            .dogscFocusEffectDisabled()
             .appKeyboardFocus(in: RoundedRectangle(cornerRadius: EditorInterfaceRadius.card, style: .continuous), isFocused: isFocused)
-            .onKeyPress(keys: [.leftArrow, .rightArrow]) { press in
+            .dogscOnKeyPress(keys: [.leftArrow, .rightArrow]) { press in
                 settle(at: (rotation + (press.key == .leftArrow ? -1 : 1)).rounded())
                 return .handled
             }
@@ -80,7 +80,7 @@ struct EditorMockupTurntable: View {
             hasPlacedInitial = true
             rotation = Double(selectedIndex)
         }
-        .onChange(of: selectedIndex) { _, index in
+        .dogscOnChange(of: selectedIndex) { _, index in
             // Undo, redo or another control changed the mockup.
             guard dragStart == nil else { return }
             let delta = wrapped(Double(index) - rotation)

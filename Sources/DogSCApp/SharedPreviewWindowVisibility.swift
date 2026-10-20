@@ -9,7 +9,7 @@ typealias PreviewSleepCoverHandler = (Bool, @escaping () -> Void) -> Void
 @MainActor
 final class SharedPreviewWindowVisibilityController: NSObject {
     private weak var view: SharedRenderedPreviewNSView?
-    private var displayLink: CADisplayLink?
+    private var displayLink: DogSCDisplayLink?
     private(set) var isSuspended = true
     private var isAwaitingResumedFrame = false
     private var transitionRevision: UInt64 = 0
@@ -24,7 +24,7 @@ final class SharedPreviewWindowVisibilityController: NSObject {
             return
         }
 
-        let link = window.displayLink(
+        let link = DogSCDisplayLink(window: window,
             target: self,
             selector: #selector(displayLinkDidFire(_:))
         )
@@ -82,7 +82,7 @@ final class SharedPreviewWindowVisibilityController: NSObject {
         NotificationCenter.default.removeObserver(self)
     }
 
-    @objc private func displayLinkDidFire(_ link: CADisplayLink) {
+    @objc private func displayLinkDidFire(_ link: DogSCDisplayLink) {
         view?.playbackDisplayLinkDidFire(link)
     }
 
@@ -118,14 +118,13 @@ final class SharedPreviewWindowVisibilityController: NSObject {
         }
     }
 
-    private func configureCadence(_ link: CADisplayLink, screen: NSScreen?) {
+    private func configureCadence(_ link: DogSCDisplayLink, screen: NSScreen?) {
         // A full-resolution effects graph must not silently double its work on
         // a 120/144 Hz display. This is a presentation budget, not an export
         // frame-rate or pixel-resolution change; the OS still owns scheduling.
         let maximum = Float(min(max(screen?.maximumFramesPerSecond ?? 60, 1),
                                 PreviewAnimationCadence.framesPerSecond))
-        link.preferredFrameRateRange = CAFrameRateRange(
-            minimum: maximum, maximum: maximum, preferred: maximum)
+        link.preferredFramesPerSecond = Int(maximum)
     }
 
     private func resumePreviewPresentationForForegroundWindow(

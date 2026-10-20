@@ -185,21 +185,33 @@ enum CaptureDeviceCatalog {
         let discovery: AVCaptureDevice.DiscoverySession
         switch role {
         case .camera:
+            let types: [AVCaptureDevice.DeviceType]
+            if #available(macOS 14.0, *) {
+                types = [.builtInWideAngleCamera, .external, .continuityCamera]
+            } else {
+                types = [.builtInWideAngleCamera, .externalUnknown]
+            }
             discovery = AVCaptureDevice.DiscoverySession(
-                deviceTypes: [.builtInWideAngleCamera, .external, .continuityCamera],
+                deviceTypes: types,
                 mediaType: .video,
                 position: .unspecified
             )
         case .microphone:
+            let types: [AVCaptureDevice.DeviceType]
+            if #available(macOS 14.0, *) { types = [.microphone] }
+            else { types = [.builtInMicrophone, .externalUnknown] }
             discovery = AVCaptureDevice.DiscoverySession(
-                deviceTypes: [.microphone],
+                deviceTypes: types,
                 mediaType: .audio,
                 position: .unspecified
             )
         case .iosDevice:
             guard enableIOSScreenCaptureDevices() else { return [] }
+            let types: [AVCaptureDevice.DeviceType]
+            if #available(macOS 14.0, *) { types = [.external] }
+            else { types = [.externalUnknown] }
             discovery = AVCaptureDevice.DiscoverySession(
-                deviceTypes: [.external],
+                deviceTypes: types,
                 mediaType: .muxed,
                 position: .unspecified
             )

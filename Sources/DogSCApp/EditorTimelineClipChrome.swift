@@ -120,9 +120,9 @@ extension View {
                 )
                 // Only the ink fades; geometry and media stay at their exact
                 // edit positions, including selection changes during a cut.
-                .animation(.easeOut(duration: 0.14)) { border in
-                    border.opacity(active ? 1 : restOpacity)
-                }
+                .opacity(active ? 1 : restOpacity)
+                .animation(.easeOut(duration: 0.14), value: active)
+                .animation(.easeOut(duration: 0.14), value: restOpacity)
                 .allowsHitTesting(false)
         }
     }

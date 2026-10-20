@@ -112,8 +112,8 @@ struct EditorBarSlider: View {
                         .position(x: width / 2, y: trackHeight / 2)
                         .onSubmit { finishEditing(commit: true) }
                         .onExitCommand { finishEditing(commit: false) }
-                        .onChange(of: draft) { _, text in draftIsValid = edit.onPreview(text) }
-                        .onChange(of: fieldFocused) { _, focused in
+                        .dogscOnChange(of: draft) { _, text in draftIsValid = edit.onPreview(text) }
+                        .dogscOnChange(of: fieldFocused) { _, focused in
                             if !focused, isTextEditing { finishEditing(commit: true) }
                         }
                         .task {
@@ -190,17 +190,17 @@ struct EditorBarSlider: View {
         .opacity(isEnabled ? 1 : 0.55)
         .focusable(isEnabled && !isTextEditing)
         .focused($isFocused)
-        .focusEffectDisabled()
-        .onChange(of: isFocused) { _, focused in
+        .dogscFocusEffectDisabled()
+        .dogscOnChange(of: isFocused) { _, focused in
             if !focused { focusedByPointer = false }
         }
-        .onKeyPress(keys: [.leftArrow, .rightArrow, .downArrow, .upArrow]) { press in
+        .dogscOnKeyPress(keys: [.leftArrow, .rightArrow, .downArrow, .upArrow]) { press in
             guard !isTextEditing else { return .ignored }
             let up = press.key == .rightArrow || press.key == .upArrow
             step(up ? 1 : -1, coarse: press.modifiers.contains(.shift))
             return .handled
         }
-        .onKeyPress(.return) {
+        .dogscOnKeyPress(.return) {
             guard isEnabled, !isTextEditing else { return .ignored }
             beginEditing()
             return .handled

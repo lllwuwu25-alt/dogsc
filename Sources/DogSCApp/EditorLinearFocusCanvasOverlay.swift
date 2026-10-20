@@ -78,7 +78,7 @@ struct EditorLinearFocusCanvasOverlay: View {
         // Rotation is pointer-driven; implicit animation would unwind 359°→0°.
         .transaction { $0.animation = nil }
         .onDisappear { finish() }
-        .onChange(of: editorStore.interaction?.id) { _, id in
+        .dogscOnChange(of: editorStore.interaction?.id) { _, id in
             if let owned = interactionID, owned != id { origin = nil; interactionID = nil }
         }
     }

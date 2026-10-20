@@ -22,7 +22,7 @@ extension View {
                 establishesKeyboardEntry: establishesKeyboardEntry, content: content())
                 // The editor's own panel tone instead of the system's grey
                 // material, so a popover reads as a piece of the editor.
-                .presentationBackground(EditorTheme.panelSurface)
+                .dogscPresentationBackground(EditorTheme.panelSurface)
         }
     }
 }
@@ -32,7 +32,7 @@ private struct EditorPopoverKeyboardEntry: ViewModifier {
     let action: () -> Void
 
     func body(content: Content) -> some View {
-        content.onKeyPress(keys: [.return, .downArrow], phases: .down) { press in
+        content.dogscOnKeyPress(keys: [.return, .downArrow], phases: .down) { press in
             guard isEnabled,
                   press.modifiers.intersection([.command, .control, .option, .shift]).isEmpty else {
                 return .ignored
@@ -58,13 +58,13 @@ private struct EditorPopoverFocusScope<Content: View>: View {
                 // a control: nested text fields must keep their own responder.
                 if establishesKeyboardEntry {
                     Color.clear.frame(width: 1, height: 1)
-                        .focusable(entryIsEnabled, interactions: .edit)
+                        .focusable(entryIsEnabled)
                         .focused($entryHasFocus)
                         .defaultFocus($entryHasFocus, true)
                         .allowsHitTesting(false)
                         .accessibilityHidden(true)
                         .onAppear { entryHasFocus = true }
-                        .onChange(of: entryHasFocus) { _, focused in
+                        .dogscOnChange(of: entryHasFocus) { _, focused in
                             if !focused { entryIsEnabled = false }
                         }
                 }

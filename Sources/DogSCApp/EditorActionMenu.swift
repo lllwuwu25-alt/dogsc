@@ -12,7 +12,7 @@ struct EditorActionMenu<Label: View>: View {
         Button { isPresented.toggle() } label: { label() }
             .buttonStyle(.editorToolbarPress)
             .appButtonKeyboardFocus(in: Capsule(style: .continuous))
-            .focusEffectDisabled()
+            .dogscFocusEffectDisabled()
             .help(appLocalized(title))
             .accessibilityLabel(appLocalized(title))
             .editorPopoverKeyboardEntry { isPresented = true }
@@ -69,7 +69,7 @@ struct EditorActionMenu<Label: View>: View {
                             .accessibilityLabel(appLocalized(item.title))
                             .accessibilityAddTraits(item.isOn ? .isSelected : [])
                             .help(appLocalized(item.detail ?? item.title))
-                            .onKeyPress(keys: [.return], phases: .down) { press in
+                            .dogscOnKeyPress(keys: [.return], phases: .down) { press in
                                 guard item.isEnabled,
                                       press.modifiers.intersection([.command, .control, .option, .shift]).isEmpty else {
                                     return .ignored

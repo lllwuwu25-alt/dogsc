@@ -25,13 +25,13 @@ struct FirstUseTourHighlight: Equatable {
         for index in 0..<segments {
             let segment = CGRect(x: rect.minX + CGFloat(index) * (width + spacing), y: rect.minY,
                                  width: width, height: rect.height)
-            let radii = RectangleCornerRadii(
+            let radii = DogSCCornerRadii(
                 topLeading: corners == .bottom ? 0 : radius,
                 bottomLeading: corners == .top ? 0 : radius,
                 bottomTrailing: corners == .top ? 0 : radius,
                 topTrailing: corners == .bottom ? 0 : radius
             )
-            path.addPath(UnevenRoundedRectangle(cornerRadii: radii, style: continuous ? .continuous : .circular).path(in: segment))
+            path.addPath(DogSCUnevenRoundedRectangle(cornerRadii: radii, style: continuous ? .continuous : .circular).path(in: segment))
         }
         // SwiftUI paths use a top-left origin; the dimmer's AppKit coordinates
         // use a bottom-left origin. This matters for top/bottom-only corners.

@@ -128,7 +128,7 @@ struct EditorHexColorInput: View {
                     onPreview(draft.committed)
                     textIsFocused = false
                 }
-                .onChange(of: textIsFocused) { _, isFocused in
+                .dogscOnChange(of: textIsFocused) { _, isFocused in
                     if isFocused {
                         beginColorInteraction()
                     } else {
@@ -147,7 +147,7 @@ struct EditorHexColorInput: View {
                     .accessibilityLabel(String(format: appLocalized("%@格式无效"), appLocalized(title)))
             }
         }
-        .onChange(of: value) { _, newValue in
+        .dogscOnChange(of: value) { _, newValue in
             // Our own preview keeps the original text-edit baseline for Esc.
             // Undo or another external edit must replace even a focused draft,
             // otherwise blur would publish the old color over that edit.
@@ -156,7 +156,7 @@ struct EditorHexColorInput: View {
             pickerDraft = newValue
             endColorInteraction()
         }
-        .onChange(of: showsPicker) { _, isPresented in
+        .dogscOnChange(of: showsPicker) { _, isPresented in
             if isPresented {
                 beginColorInteraction()
             } else {

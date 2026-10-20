@@ -26,6 +26,7 @@ struct EditorOpeningTimeline: View {
     @State private var coordinateSpaceID = UUID()
     @State private var dragState: EditorOpeningTimingDrag?
     @State private var interactionID: UUID?
+    @FocusState private var focusedOpeningIndex: Int?
 
     private let labelWidth: CGFloat = 70
     private let rowHeight: CGFloat = 34
@@ -56,7 +57,7 @@ struct EditorOpeningTimeline: View {
             grown = false
             withAnimation(.spring(response: 0.7, dampingFraction: 0.8).delay(0.45)) { grown = true }
         }
-        .onChange(of: editorStore.interaction?.id) { _, id in
+        .dogscOnChange(of: editorStore.interaction?.id) { _, id in
             if activeIndex != nil, id != interactionID { reset() }
         }
         .onDisappear { finish() }
@@ -166,7 +167,8 @@ struct EditorOpeningTimeline: View {
                 }
         )
         .focusable(isEnabled)
-        .onKeyPress(keys: [.leftArrow, .rightArrow]) { press in
+        .focused($focusedOpeningIndex, equals: index)
+        .dogscOnKeyPress(keys: [.leftArrow, .rightArrow], isFocused: focusedOpeningIndex == index) { press in
             guard isEnabled else { return .ignored }
             step(index: index, increment: press.key == .rightArrow, coarse: press.modifiers.contains(.shift))
             return .handled

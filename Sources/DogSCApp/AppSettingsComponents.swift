@@ -119,15 +119,15 @@ struct SettingsIsland<Content: View>: View {
                     }
                 }
             }
-            .scrollBounceBehavior(.basedOnSize)
+            .dogscSizeBasedScrollBounce()
             .scrollIndicators(contentHeight > maxHeight ? .automatic : .never)
             .frame(height: max(height, 1))
             .clipShape(RoundedRectangle(cornerRadius: SettingsLayout.islandRadius, style: .continuous))
             .background { RecorderSurfaceShape(radius: SettingsLayout.islandRadius, castsShadow: true) }
             .opacity(contentHeight == 0 ? 0 : 1)
             .animation(RecorderMotion.morph, value: height)
-            .onChange(of: pageID) { _, _ in proxy.scrollTo(Self.topAnchor, anchor: .top) }
-            .onChange(of: height, initial: true) { _, value in
+            .dogscOnChange(of: pageID) { _, _ in proxy.scrollTo(Self.topAnchor, anchor: .top) }
+            .dogscOnChange(of: height, initial: true) { _, value in
                 if value > 0 { onHeightChange(value) }
             }
         }
@@ -168,19 +168,7 @@ struct SettingsRingingBell: View {
     var body: some View {
         AppLineIcon(kind: .bell, size: size)
             .foregroundStyle(enabled ? SettingsTheme.textSecondary : SettingsTheme.textFaint)
-            .keyframeAnimator(initialValue: 0.0, trigger: ringing) { view, angle in
-                view.rotationEffect(.degrees(RecorderMotion.reduces ? 0 : angle), anchor: .top)
-            } keyframes: { _ in
-                if ringing {
-                    CubicKeyframe(16, duration: 0.08)
-                    CubicKeyframe(-13, duration: 0.12)
-                    CubicKeyframe(9, duration: 0.12)
-                    CubicKeyframe(-5, duration: 0.12)
-                    SpringKeyframe(0, duration: 0.3, spring: Spring(duration: 0.3, bounce: 0.2))
-                } else {
-                    CubicKeyframe(0, duration: 0.01)
-                }
-            }
+            .dogscBellMotion(ringing: ringing)
             .animation(RecorderMotion.fade, value: enabled)
             .accessibilityHidden(true)
     }
@@ -216,18 +204,7 @@ private struct SettingsRipple: View {
         Circle()
             .strokeBorder(RecorderStyle.positiveInk, lineWidth: 1.5)
             .frame(width: 30, height: 30)
-            .keyframeAnimator(initialValue: RippleFrame(), trigger: active) { view, frame in
-                view.scaleEffect(frame.scale).opacity(frame.opacity)
-            } keyframes: { _ in
-                KeyframeTrack(\.scale) {
-                    CubicKeyframe(1, duration: 0.01)
-                    CubicKeyframe(active && !RecorderMotion.reduces ? 1.6 : 1, duration: 0.7)
-                }
-                KeyframeTrack(\.opacity) {
-                    CubicKeyframe(active ? 0.8 : 0, duration: 0.01)
-                    CubicKeyframe(0, duration: 0.7)
-                }
-            }
+            .dogscRipple(active: active)
             .accessibilityHidden(true)
     }
 
@@ -444,12 +421,7 @@ struct SettingsPressStyle: ButtonStyle {
 struct SettingsActivationFeedback: ViewModifier {
     let trigger: Int
     func body(content: Content) -> some View {
-        content.keyframeAnimator(initialValue: CGFloat(1), trigger: trigger) { view, scale in
-            view.scaleEffect(RecorderMotion.reduces ? 1 : scale)
-        } keyframes: { _ in
-            CubicKeyframe(0.90, duration: 0.08)
-            SpringKeyframe(1, duration: 0.32, spring: Spring(duration: 0.32, bounce: 0.18))
-        }
+        content.dogscPulse(trigger: trigger)
     }
 }
 

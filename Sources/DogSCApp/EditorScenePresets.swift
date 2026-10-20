@@ -63,7 +63,7 @@ extension EditorView {
                                  compact: compact, showsMenu: true)
             }
             .buttonStyle(EditorToolbarPressButtonStyle(cornerRadius: 16))
-            .focusEffectDisabled()
+            .dogscFocusEffectDisabled()
             .editorPopoverKeyboardEntry { showsScenePresetPopover = true }
             .editorPopover(isPresented: $showsScenePresetPopover, arrowEdge: .bottom) {
                 scenePresetMenu

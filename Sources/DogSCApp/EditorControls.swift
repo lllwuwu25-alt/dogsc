@@ -239,11 +239,11 @@ struct EditorInspectorParameterReadout: View {
                         .appKeyboardFocusScrollTarget(isFocused: valueFieldFocused)
                         .onSubmit { commitTextEditing(configuration) }
                         .onExitCommand { cancelTextEditing(configuration) }
-                        .onChange(of: draftText) { _, newValue in
+                        .dogscOnChange(of: draftText) { _, newValue in
                             draftIsValid = configuration.onPreview(newValue)
                             validationFailed = false
                         }
-                        .onChange(of: valueFieldFocused) { _, focused in
+                        .dogscOnChange(of: valueFieldFocused) { _, focused in
                             guard !focused, isTextEditing else { return }
                             if draftIsValid {
                                 commitTextEditing(configuration)

@@ -1,5 +1,6 @@
 import AppKit
 import QuartzCore
+import RecorderCore
 import SwiftUI
 
 /// Shared opaque surfaces for the recorder and settings. The same shapes and
@@ -57,8 +58,8 @@ enum RecorderStyle {
 /// so a surface never arrives empty.
 enum RecorderMotion {
     // AppKit card transitions sample these same springs on their frame clock.
-    static let morphSpring = Spring(response: 0.5, dampingRatio: 0.82)
-    static let settleSpring = Spring(response: 0.36, dampingRatio: 0.84)
+    static let morphSpring = CompatibilitySpring(response: 0.5, dampingRatio: 0.82)
+    static let settleSpring = CompatibilitySpring(response: 0.36, dampingRatio: 0.84)
     static var reduces: Bool { NSWorkspace.shared.accessibilityDisplayShouldReduceMotion }
     static var morph: Animation? {
         reduces ? nil : .spring(response: morphSpring.response, dampingFraction: morphSpring.dampingRatio)

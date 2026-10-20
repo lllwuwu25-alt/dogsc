@@ -278,7 +278,7 @@ private struct RecorderMemoView: View {
         Button(action: action) {
             Image(systemName: symbol).font(.system(size: symbol.hasPrefix("textformat") ? 15 : 12, weight: .semibold))
                 .foregroundStyle(RecorderStyle.muted)
-                .contentTransition(.symbolEffect(.replace))
+                .dogscSymbolReplacement()
                 .frame(width: 30, height: 30)
         }
         .buttonStyle(RecorderCirclePressStyle()).disabled(!enabled).opacity(enabled ? 1 : 0.35)

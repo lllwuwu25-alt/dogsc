@@ -324,7 +324,7 @@ final class SharedRenderedPreviewNSView: NSView {
         windowVisibilityController.updatePlaybackState()
     }
 
-    func playbackDisplayLinkDidFire(_ link: CADisplayLink) {
+    func playbackDisplayLinkDidFire(_ link: DogSCDisplayLink) {
         guard let playbackController,
               playbackController.isPlaying,
               let playbackFrameProvider

@@ -274,7 +274,7 @@ struct EditorSoftRaisedButtonStyle: ButtonStyle {
                 .scaleEffect(pressed && !RecorderMotion.reduces ? 0.96 : 1)
                 .opacity(isEnabled ? 1 : 0.38)
                 .onHover { isHovered = $0 }
-                .onChange(of: isEnabled) { _, enabled in if !enabled { isHovered = false } }
+                .dogscOnChange(of: isEnabled) { _, enabled in if !enabled { isHovered = false } }
                 .animation(SpringMotion.hover, value: isHovered)
                 .animation(SpringMotion.snappy, value: pressed)
         }

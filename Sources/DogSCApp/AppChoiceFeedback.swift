@@ -45,7 +45,7 @@ struct AppChoiceButton<Label: View>: View {
         }
         .buttonStyle(AppChoicePressStyle(isSelected: isSelected, feedback: feedback))
         .onDisappear { feedback.reset() }
-        .onKeyPress(keys: [.return], phases: .down) { press in
+        .dogscOnKeyPress(keys: [.return], phases: .down) { press in
             guard isEnabled,
                   press.modifiers.intersection([.command, .control, .option, .shift]).isEmpty else { return .ignored }
             feedback.activate(wasSelected: isSelected)
@@ -145,10 +145,10 @@ private struct AppChoicePressStyle: ButtonStyle {
             configuration.label
                 .environment(\.appChoicePress, feedback.press)
                 .opacity(isEnabled ? 1 : 0.45)
-                .onChange(of: configuration.isPressed) { _, pressed in
+                .dogscOnChange(of: configuration.isPressed) { _, pressed in
                     feedback.trackPress(pressed && isEnabled, wasSelected: isSelected)
                 }
-                .onChange(of: isEnabled) { _, enabled in
+                .dogscOnChange(of: isEnabled) { _, enabled in
                     if !enabled { feedback.reset() }
                 }
         }

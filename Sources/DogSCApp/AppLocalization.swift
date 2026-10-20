@@ -1,11 +1,12 @@
 import AppKit
+import Combine
 import Foundation
 import Observation
 
 /// One immutable language snapshot is shared by SwiftUI and native labels.
 /// Reads can also come from error-formatting workers: the lock protects only
 /// that snapshot, while all changes and UI notifications belong to MainActor.
-final class AppLocalization: Observable, @unchecked Sendable {
+final class AppLocalization: ObservableObject, @unchecked Sendable {
     static let shared = AppLocalization()
 
     private struct Language {
@@ -17,11 +18,14 @@ final class AppLocalization: Observable, @unchecked Sendable {
         var locale: Locale { Locale(identifier: identifier) }
     }
 
-    private let registrar = ObservationRegistrar()
+    let objectWillChange = ObservableObjectPublisher()
+    private let modernRegistrar: Any?
     private let lock = NSLock()
     private var current: Language
 
     private init() {
+        if #available(macOS 14.0, *) { modernRegistrar = ObservationRegistrar() }
+        else { modernRegistrar = nil }
         current = Self.resolve(AppLanguagePreference(
             preferredLanguages: AppPreferences.applicationLanguageOverride
         ))
@@ -31,7 +35,9 @@ final class AppLocalization: Observable, @unchecked Sendable {
     // computed label calls appLocalized through another type. No view .id or
     // hosting-root replacement is needed to invalidate those String labels.
     private var language: Language {
-        registrar.access(self, keyPath: \.language)
+        if #available(macOS 14.0, *), let registrar = modernRegistrar as? ObservationRegistrar {
+            registrar.access(self, keyPath: \.language)
+        }
         return lock.withLock { current }
     }
 
@@ -49,7 +55,12 @@ final class AppLocalization: Observable, @unchecked Sendable {
     func apply(_ preference: AppLanguagePreference) -> Bool {
         let next = Self.resolve(preference)
         guard lock.withLock({ current.identifier != next.identifier }) else { return false }
-        registrar.withMutation(of: self, keyPath: \.language) {
+        objectWillChange.send()
+        if #available(macOS 14.0, *), let registrar = modernRegistrar as? ObservationRegistrar {
+            registrar.withMutation(of: self, keyPath: \.language) {
+                lock.withLock { current = next }
+            }
+        } else {
             lock.withLock { current = next }
         }
         return true
@@ -73,6 +84,9 @@ final class AppLocalization: Observable, @unchecked Sendable {
         return Language(identifier: identifier, bundle: bundle)
     }
 }
+
+@available(macOS 14.0, *)
+extension AppLocalization: Observable {}
 
 extension Notification.Name {
     static let appLanguageDidChange = Notification.Name("cn.laogou.dogsc.language.changed")

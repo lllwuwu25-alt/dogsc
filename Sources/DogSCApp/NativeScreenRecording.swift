@@ -14,6 +14,7 @@ enum NativeScreenRecordingBackendPolicy {
     /// 5K HEVC path is already the dominant WindowServer workload and uses
     /// Apple's direct writer, while the user has not reported full-display
     /// softness.
+    @available(macOS 14.0, *)
     static func captureResolution(for source: CaptureSource) -> SCCaptureResolutionType {
         switch source {
         case .window, .area:
