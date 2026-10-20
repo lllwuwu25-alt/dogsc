@@ -1,0 +1,60 @@
+name: Intel Ventura build
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, compat/intel-ventura]
+    paths:
+      - "Sources/**"
+      - "Resources/**"
+      - "Tests/**"
+      - "tests/**"
+      - "Package.*"
+      - "build-intel.sh"
+      - "scripts/**"
+      - ".github/workflows/intel-ventura.yml"
+permissions:
+  contents: read
+concurrency:
+  group: intel-ventura-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  intel:
+    runs-on: macos-15-intel
+    timeout-minutes: 45
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+      MACOSX_DEPLOYMENT_TARGET: "13.0"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Show compiler
+        run: |
+          xcodebuild -version
+          xcrun swift --version
+          uname -m
+      - name: Packaging regression tests
+        run: python3 -m unittest discover -s tests -v
+      - name: Core compatibility tests
+        run: |
+          set -o pipefail
+          xcrun swift test --scratch-path .build/intel --triple x86_64-apple-macosx13.0 2>&1 | tee swift-tests.log
+      - name: Build and verify Intel app
+        run: |
+          set -o pipefail
+          bash build-intel.sh 2>&1 | tee intel-build.log
+      - name: Upload installable files
+        uses: actions/upload-artifact@v4
+        with:
+          name: DogSC-Intel-v0.1.8-macOS13
+          path: dist/intel/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Keep compiler diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: DogSC-Intel-build-logs
+          path: |
+            swift-tests.log
+            intel-build.log
+          if-no-files-found: ignore
+          retention-days: 14
