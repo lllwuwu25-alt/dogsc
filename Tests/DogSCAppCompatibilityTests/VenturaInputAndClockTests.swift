@@ -60,13 +60,20 @@ final class VenturaInputAndClockTests: XCTestCase {
         defer { raw.invalidate(); clock.invalidate() }
         // Pump raw Foundation timers without yielding this actor job. Their
         // MainActor Tasks are pending when pause invalidates the generation.
-        CFRunLoopRunInMode(.defaultMode, 0.06, false)
+        pumpFoundationTimers()
         XCTAssertGreaterThan(probe.updates, 0, "The raw timer must actually fire during the pump")
         clock.isPaused = true
         clock.preferredFramesPerSecond = 1
         clock.isPaused = false
         try await Task.sleep(for: .milliseconds(80))
         XCTAssertEqual(probe.frames, 0)
+    }
+
+    @MainActor
+    private func pumpFoundationTimers() {
+        // Keep this deliberate test-only run-loop pump in a synchronous
+        // boundary: CFRunLoopRunInMode is annotated noasync by the SDK.
+        CFRunLoopRunInMode(.defaultMode, 0.06, false)
     }
 
     @MainActor
