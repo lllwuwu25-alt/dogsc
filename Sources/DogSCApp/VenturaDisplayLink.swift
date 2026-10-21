@@ -104,6 +104,7 @@ final class VenturaTimerFrameClock {
     private var runLoop: RunLoop?
     private var modes = Set<RunLoop.Mode>()
     private var invalidated = false
+    private var timerGeneration: UInt64 = 0
 
     var isPaused = false {
         didSet {
@@ -133,6 +134,7 @@ final class VenturaTimerFrameClock {
     }
 
     func invalidate() {
+        timerGeneration &+= 1
         invalidated = true
         timer?.invalidate()
         timer = nil
@@ -142,16 +144,18 @@ final class VenturaTimerFrameClock {
     }
 
     private func reschedule() {
+        timerGeneration &+= 1
         timer?.invalidate()
         timer = nil
         guard !invalidated, !isPaused, let runLoop, !modes.isEmpty else { return }
         let interval = 1.0 / Double(min(max(preferredFramesPerSecond, 1), 60))
-        let timer = Timer(timeInterval: interval, repeats: true) { [weak self] _ in
-            MainActor.assumeIsolated {
-                let timestamp = CACurrentMediaTime()
-                self?.onTick?(timestamp, timestamp + interval)
-            }
-        }
+        let generation = timerGeneration
+        let timer = Timer(timeInterval: interval, repeats: true, block: MainActorTimerCallback.make { [weak self] in
+            guard let self, self.timerGeneration == generation,
+                  !self.invalidated, !self.isPaused else { return }
+            let timestamp = CACurrentMediaTime()
+            self.onTick?(timestamp, timestamp + interval)
+        })
         timer.tolerance = interval * 0.05
         for mode in modes { runLoop.add(timer, forMode: mode) }
         self.timer = timer
