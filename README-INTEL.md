@@ -6,9 +6,9 @@
 目标设备：MacBook Pro 13-inch 2017 / Intel i5 / Iris Plus 640 / 8GB / macOS 13.7.4。
 部署目标：Intel x86_64、macOS 13.0 及以上。
 
-**当前状态：Intel 云端编译、9 项 Swift 测试、2 项打包测试及安装包验证均已通过，已生成 DMG。Ventura 13.7.4 的实际录制、声音与导出仍需在目标电脑上验证。**
+**当前修复：内部构建 20 已修正 Ventura 开始录制时的定时回调线程断言，并加入旧回调丢弃与弹窗预览检查。14 项自动测试、Release 编译及签名/架构检查均已通过；实际录制、声音与导出仍需在目标电脑上确认。**
 
-[成功构建与安装包](https://github.com/lllwuwu25-alt/dogsc/actions/runs/39417629168)。
+[下载构建 20 的 DMG](https://github.com/lllwuwu25-alt/dogsc/releases/download/intel-build-16/DogSC-Intel-v0.1.8-macOS13.dmg) · [发布页面](https://github.com/lllwuwu25-alt/dogsc/releases/tag/intel-build-16) · [构建 20 的验证记录](https://github.com/lllwuwu25-alt/dogsc/actions/runs/39613591663)。
 
 ## 使用流程
 
@@ -43,6 +43,7 @@
 - 保留现有 ScreenCaptureKit 系统声音回退；不在 Ventura 调用新版 Core Audio Tap。
 - 本地化在旧系统使用 Combine 通知，新系统继续保留 Observation 跟踪。
 - 独立构建与更新身份；封装所有字体、语言文件、图标、教程资源和 Sparkle 框架。
+- 录制、预览与设置动画的 Foundation 定时回调显式进入 MainActor，停止、暂停或重开后丢弃旧回调。
 
 ## 实机验收
 
