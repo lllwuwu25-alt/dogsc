@@ -19,6 +19,7 @@ def prepare(bundle):
     }
     info.update(identity)
     info.update({
+        "CFBundleVersion": "20",
         "LSMinimumSystemVersion": "13.0",
         "SUEnableAutomaticChecks": False,
         "SUAllowsAutomaticUpdates": False,
