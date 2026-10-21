@@ -470,6 +470,7 @@ final class PointerEventRecorder {
     private var frameSource: PointerCaptureFrameSource?
     private var frameRefreshTimer: Timer?
     private var cursorShapeTimer: Timer?
+    private var timerGeneration: UInt64 = 0
     private var lastObservedSystemCursor: NSCursor?
     private var previousMouseCoalescingEnabled: Bool?
 
@@ -523,6 +524,7 @@ final class PointerEventRecorder {
 
     @discardableResult
     func stop() -> [PointerEventRecord] {
+        timerGeneration &+= 1
         frameRefreshTimer?.invalidate()
         frameRefreshTimer = nil
         cursorShapeTimer?.invalidate()
@@ -556,22 +558,23 @@ final class PointerEventRecorder {
     }
 
     private func installFrameRefreshTimer() {
-        let timer = Timer(timeInterval: 0.25, repeats: true) { [weak self] _ in
-            MainActor.assumeIsolated {
-                guard let self, let frame = self.frameSource?.currentFrame() else { return }
-                self.buffer.updateCaptureFrame(frame)
-            }
-        }
+        let generation = timerGeneration
+        let timer = Timer(timeInterval: 0.25, repeats: true, block: MainActorTimerCallback.make { [weak self] in
+            guard let self, self.timerGeneration == generation,
+                  let frame = self.frameSource?.currentFrame() else { return }
+            self.buffer.updateCaptureFrame(frame)
+        })
         RunLoop.main.add(timer, forMode: .common)
         frameRefreshTimer = timer
     }
 
     private func installCursorShapeTimer() {
-        let timer = Timer(timeInterval: 1.0 / 30.0, repeats: true) { [weak self] _ in
-            MainActor.assumeIsolated {
-                self?.sampleSystemCursorShape(force: false)
-            }
-        }
+        let generation = timerGeneration
+        let timer = Timer(timeInterval: 1.0 / 30.0, repeats: true, block: MainActorTimerCallback.make { [weak self] in
+            guard let self, self.timerGeneration == generation,
+                  self.frameSource != nil else { return }
+            self.sampleSystemCursorShape(force: false)
+        })
         RunLoop.main.add(timer, forMode: .common)
         cursorShapeTimer = timer
     }
