@@ -182,6 +182,7 @@ private final class WindowHeightSpring {
     private var initialVelocity: CGFloat = 0
     private var startTime: CFTimeInterval = 0
     private var timer: Timer?
+    private var timerGeneration: UInt64 = 0
     var isRunning: Bool { timer != nil }
 
     init(window: NSWindow, width: CGFloat, from: CGFloat, to: CGFloat) {
@@ -192,10 +193,14 @@ private final class WindowHeightSpring {
     }
 
     func start() {
+        stop()
+        let generation = timerGeneration
         startTime = CACurrentMediaTime()
-        let timer = Timer(timeInterval: 1.0 / 120.0, repeats: true) { [weak self] _ in
-            MainActor.assumeIsolated { self?.tick() }
-        }
+        let timer = Timer(timeInterval: 1.0 / 120.0, repeats: true, block: MainActorTimerCallback.make { [weak self] in
+            guard let self, self.timerGeneration == generation,
+                  self.timer != nil else { return }
+            self.tick()
+        })
         RunLoop.main.add(timer, forMode: .common)
         self.timer = timer
     }
@@ -211,6 +216,7 @@ private final class WindowHeightSpring {
     }
 
     func stop() {
+        timerGeneration &+= 1
         timer?.invalidate()
         timer = nil
     }
