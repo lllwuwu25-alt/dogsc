@@ -3,6 +3,32 @@
 Baseline: upstream v0.1.8, 567fd6ed3bf113227dcf3e815f87ce60f0b69497.
 Target: Intel x86_64, macOS 13.0+; intended hardware is a 2017 Intel MacBook Pro on Ventura 13.7.4.
 
+## Application build 21: AppKit notification crash repair
+
+The target Ventura 13.7.4 report confirms application build 20 and identifies a
+SIGILL in `FirstUseTourController.observe`, closure 5, while AppKit delivers
+application deactivation. This is a legacy callback executor assertion; the
+report does not identify a video encoder failure.
+
+- Void Foundation/AppKit notification and animation callbacks now use an explicit MainActor task.
+- Guide/window observer generations and originating popover identities discard obsolete queued callbacks after a window or panel is replaced.
+- Synchronous event filters and RunLoop modal entry use a narrowly scoped main-thread-checked bridge, retaining their immediate return and modal-loop behavior. The bridge uses Swift's nonescaping closure-erasure pattern after its thread precondition; it is not available as an unchecked background-thread entry.
+- The real-notification regression compiled successfully with the old assertion implementation and exited with SIGILL (-4) in run 19: https://github.com/lllwuwu25-alt/dogsc/actions/runs/39698352553.
+- Positive notification delivery, background-thread rejection, guide rebind state, popover replacement, existing modal-loop and keyboard tests are included in the new validation run: https://github.com/lllwuwu25-alt/dogsc/actions/runs/39699546499.
+
+Cloud validation succeeded for source `a60c381623aeb0dd0ebe669438e16cdf76d4bc3e`:
+4 Python tests, 13 XCTest cases with zero failures, Release build and all bundle
+checks passed. The downloaded DMG and application ZIP matched the published
+SHA-256 digests. The application is x86_64, CFBundleVersion 21, minimum macOS 13.0,
+with ad-hoc signature flags 2 (no hardened runtime).
+
+Release: https://github.com/lllwuwu25-alt/dogsc/releases/tag/intel-app-build-21-source
+DMG SHA-256: `7de34ac96991c66d700f4112b93e476eff9ae9ae211882f2c53e8638a1069bd1`.
+ZIP SHA-256: `5a31618a8d55f317b2a6b0d9cb5d7ef320ec39dd1c3a424699d61c795960598d`.
+The release tag is aligned to the validated source commit; application source
+and the packaged build agree. Target Ventura recording, audio and export still
+require the user's Mac.
+
 ## Recording-start timer crash: Intel application build 20
 
 The Ventura report for application build 19 / workflow build 6 identifies a
