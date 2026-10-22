@@ -18,20 +18,51 @@ jobs:
       MACOSX_DEPLOYMENT_TARGET: '13.0'
     steps:
       - uses: actions/checkout@v4
-      - name: Add regression tests before repair
+      - name: Apply video color repair
         run: |
           python3 - <<'PATCH'
           import base64, subprocess, zlib
-          patch = zlib.decompress(base64.b64decode('eJytVm1v4kYQ/s6vGKFKNQKMcblcYjUNiIQUNdHleGulXIQ29jhsz+xau2sIOuW/36xtkgtw11bNflkz65l9nmdeTMTjGJrNB26AtSaojW6dy4dxv5emfblMmeH3POFmUxzNeISyLxOp9g9dveaxgfu3iFIRuIaYJwhLGSG0Pe+o06lwEeEjeMVy3ffeL+86x6zSbDahFeGqJbIkqdTr9TfC0O1C02t4UG83Oj50u5U6X6ZSGejNBjITETlJ8WzsS4WXiqULHupXxvymZ8sIQ6kiVPbk2fhX395bqXcNbeyeaJcHWwKVeqUec8ESCBOmNfwIfVCG6zON8KVSB1qtFsxYkqEGhTYwRnC/gRkKkyn2s7VS6N6spzWaPxU3qIYizQysWMILnoBKSeUW4VLFV8wgJEivFEEmigkdoxpkIrTvE4wxml/HRnHx8Bucwm3hald1OJnOR/P33sncrza2P33K8vz3q0trueICmbJP4+ubycV8PJn73nFnfvOx2tiL43u+9+rVjn88b79Y/I53PW+fnLzb+t5ZOe1DTGDB5FqlRAIL6lONupRmnKWFXLv0nBqYhZJrvVU4DycVhFSvIXABt2XMvjW4C/+o0wB3gauQtlTJEeqO7999626XVTRTCek1oOq/ZoI9oHIjjFmWGNegLQumNudcYWik2rz2tstlaYoiItVvmFnY8pCCyDjT6fDcqblZxqMiKbV/8r14NCi0JZuTcjPS5frDrC+FYZQfBWdQXcpVFQLa0051JyCBpne+gFGbs4NsFJI3DomUw0xgadfgaV8OmRlbiqc2EJSifshtzj4DlQkqvFAhim2njTIxkZ9ROHQ2PA/KDiSOI/vbqTVAG6r/5SUSp7zWA2jXGvuxCyDT0VWOtQFrHplFADaxC+QPC1M8x4otcUTtEYAbp/rIOxAqFzQotgZ1n0WkxxtNWvSyiMsAYpZobIAUE1RL2/kDxhNiHpCic1tfO0rV9oXj4kU3GglTsabx5Fxz28iOwjihEiIZgpJYzQ0XPIkUigOFEXOlDV39k+cm7B6pQE+hurJTKB8UVXg6c1d2wgDTZwcmyQF41AQpKsNpKO1izJG7BSyaIhalPrvtzV7G3s2z8x+4udsHbFHcFnVO9ZDvdwcwmLKt9xC8gNteuzsB7L07Ecnd8lZmojJ0vjcY3bBoIO1sbz9UbNVPRdfVgu2YpjL5mzKm4fuATj+9xPy2HctaedqbexePdrz9z7FXJjP/XJddSh+34ZKafWB7YZsw+4JjySsWUq+4OlLnqD8bmdZeB/tRVmwQl60OVcK/zNRbZam6mxd8LP8d/Jf0UE6eKl8BnGsOHA=='))
+          patch = zlib.decompress(base64.b64decode('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'))
           subprocess.run(['git', 'apply', '--check', '-'], input=patch, check=True)
           subprocess.run(['git', 'apply', '-'], input=patch, check=True)
           PATCH
-      - name: Reproduce unsupported Ventura writer settings
+          git diff --check
+      - name: Packaging and actor regression tests
+        run: python3 -m unittest discover -s tests -v
+      - name: AppKit core and video color regression tests
         run: |
           set -o pipefail
-          xcrun swift test --scratch-path .build/intel --triple x86_64-apple-macosx13.0 --filter VideoColorCompatibilityTests 2>&1 | tee color-red-tests.log
-      - uses: actions/upload-artifact@v4
-        if: always()
+          xcrun swift test --scratch-path .build/intel --triple x86_64-apple-macosx13.0 2>&1 | tee swift-tests.log
+      - name: Commit validated source changes
+        run: |
+          git add -- Sources Tests scripts README-INTEL.md docs/INTEL-VALIDATION.md
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Fix Ventura recording startup with converted Rec.709 video'
+          git push origin HEAD:compat/intel-ventura
+          git rev-parse HEAD
+      - name: Build and verify Intel application build 22
+        run: |
+          set -o pipefail
+          bash build-intel.sh 2>&1 | tee intel-build.log
+      - name: Upload installable files
+        uses: actions/upload-artifact@v4
         with:
-          name: video-color-red-test-log
-          path: color-red-tests.log
+          name: DogSC-Intel-app-build22
+          path: dist/intel/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Keep compiler diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: DogSC-Intel-app-build22-logs
+          path: |
+            swift-tests.log
+            intel-build.log
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Publish application build 22 assets
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload intel-app-build-22 dist/intel/*.dmg dist/intel/*.zip
