@@ -113,7 +113,7 @@ final class AppKeyboardFocusVisibility: ObservableObject {
         // events and the final release reset it, not another root mounting.
         guard monitor == nil else { return }
         monitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown, .leftMouseDown, .rightMouseDown, .otherMouseDown]) { [weak self] event in
-            MainActor.assumeIsolated {
+            MainActorCallback.syncOnMainThread {
                 guard let self else { return }
                 if event.type == .keyDown {
                     let modifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
