@@ -152,6 +152,7 @@ final class FirstUseTourController {
     private var completed: Bool
     private var updatePending = false
     private var observers: [NSObjectProtocol] = []
+    private var observationGeneration: UInt64 = 0
     private var keyMonitor: Any?
     private var shadePanel: NSPanel?
     private var cardPanel: FirstUseTourPanel?
@@ -292,6 +293,8 @@ final class FirstUseTourController {
     }
 
     private func observe(_ window: NSWindow?) {
+        observationGeneration &+= 1
+        let generation = observationGeneration
         observers.forEach(NotificationCenter.default.removeObserver)
         observers.removeAll()
         owner = window
@@ -300,30 +303,45 @@ final class FirstUseTourController {
                      NSWindow.didChangeOcclusionStateNotification,
                      NSWindow.didDeminiaturizeNotification] {
             observers.append(NotificationCenter.default.addObserver(forName: name, object: window, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated { self?.requestUpdate() }
+                MainActorCallback.perform {
+                    guard let self, self.observationGeneration == generation else { return }
+                    self.requestUpdate()
+                }
             })
         }
         for name in [NSWindow.willCloseNotification, NSWindow.didMiniaturizeNotification] {
             observers.append(NotificationCenter.default.addObserver(forName: name, object: window, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated { self?.dismissPanels() }
+                MainActorCallback.perform {
+                    guard let self, self.observationGeneration == generation else { return }
+                    self.dismissPanels()
+                }
             })
         }
         observers.append(NotificationCenter.default.addObserver(forName: NSWindow.didBecomeKeyNotification, object: window, queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated { self?.resume() }
+            MainActorCallback.perform {
+                    guard let self, self.observationGeneration == generation else { return }
+                    self.resume()
+                }
         })
         for name in [NSApplication.didBecomeActiveNotification, NSApplication.didChangeScreenParametersNotification] {
             observers.append(NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated { self?.resume() }
+                MainActorCallback.perform {
+                    guard let self, self.observationGeneration == generation else { return }
+                    self.resume()
+                }
             })
         }
         for name in [NSApplication.didResignActiveNotification, NSApplication.didHideNotification] {
             observers.append(NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated { self?.dismissPanels() }
+                MainActorCallback.perform {
+                    guard let self, self.observationGeneration == generation else { return }
+                    self.dismissPanels()
+                }
             })
         }
         observers.append(NotificationCenter.default.addObserver(forName: NSWindow.didBecomeKeyNotification, object: nil, queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated {
-                guard let self, let next = NSApp.keyWindow,
+            MainActorCallback.perform {
+                guard let self, self.observationGeneration == generation, let next = NSApp.keyWindow,
                       next !== self.owner, next !== self.cardPanel else { return }
                 self.suspend()
             }
