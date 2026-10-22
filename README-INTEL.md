@@ -6,9 +6,9 @@
 目标设备：MacBook Pro 13-inch 2017 / Intel i5 / Iris Plus 640 / 8GB / macOS 13.7.4。
 部署目标：Intel x86_64、macOS 13.0 及以上。
 
-**当前修复：内部构建 20 已修正 Ventura 开始录制时的定时回调线程断言，并加入旧回调丢弃与弹窗预览检查。14 项自动测试、Release 编译及签名/架构检查均已通过；实际录制、声音与导出仍需在目标电脑上确认。**
+**当前修复：内部构建 21 修正应用失去焦点时的新手引导通知断言，并处理同类通知、动画回调及旧窗口回调。17 项自动测试、Release 编译及签名/架构检查均已通过；实际录制、声音与导出仍需在目标电脑上确认。**
 
-[下载构建 20 的 DMG](https://github.com/lllwuwu25-alt/dogsc/releases/download/intel-build-16/DogSC-Intel-v0.1.8-macOS13.dmg) · [发布页面](https://github.com/lllwuwu25-alt/dogsc/releases/tag/intel-build-16) · [构建 20 的验证记录](https://github.com/lllwuwu25-alt/dogsc/actions/runs/39613591663)。
+[下载构建 21 的 DMG](https://github.com/lllwuwu25-alt/dogsc/releases/download/intel-app-build-21-source/DogSC-Intel-v0.1.8-macOS13.dmg) · [发布页面](https://github.com/lllwuwu25-alt/dogsc/releases/tag/intel-app-build-21-source) · [构建 21 的验证记录](https://github.com/lllwuwu25-alt/dogsc/actions/runs/39699546499)。
 
 ## 使用流程
 
