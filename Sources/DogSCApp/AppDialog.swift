@@ -314,7 +314,7 @@ enum AppDialogPresenter {
             completion(.init(actionID: nil))
         }
         RunLoop.main.perform(inModes: [.default]) { [weak owner] in
-            MainActor.assumeIsolated {
+            MainActorCallback.syncOnMainThread {
                 guard activeID == id else { return }
                 guard !hadOwner || owner?.isVisible == true else { cancel(id: id); return }
                 let response = runModal(dialog, relativeTo: owner, id: id)
@@ -343,8 +343,8 @@ enum AppDialogPresenter {
         let panel = AppDialogPanel(contentRect: .zero, styleMask: [.borderless], backing: .buffered, defer: false)
         var response = AppDialog.Response(actionID: nil)
         var finished = false
-        let finish: (AppDialog.Response) -> Void = { value in
-            guard !finished else { return }
+        let finish: @MainActor @Sendable (AppDialog.Response) -> Void = { value in
+            guard activeID == id, !finished else { return }
             finished = true
             response = value
             NSApp.stopModal()
@@ -386,7 +386,7 @@ enum AppDialogPresenter {
         FirstUseTourController.setAppDialogPresented(true)
         let closeObserver = owner.map { window in
             NotificationCenter.default.addObserver(forName: NSWindow.willCloseNotification, object: window, queue: .main) { _ in
-                MainActor.assumeIsolated { cancel(id: id) }
+                MainActorCallback.perform { cancel(id: id) }
             }
         }
         // Fitting a hosting view can already run SwiftUI.onAppear offscreen.
@@ -416,7 +416,7 @@ enum AppDialogPresenter {
                 context.timingFunction = CAMediaTimingFunction(name: .easeIn)
                 panel.animator().alphaValue = 0
             }, completionHandler: {
-                MainActor.assumeIsolated {
+                MainActorCallback.perform {
                     panel.orderOut(nil)
                     panel.contentViewController = nil
                     panel.close()
@@ -436,8 +436,8 @@ enum AppDialogPresenter {
                                              id: UUID) -> AppDialog.Response {
         var response = AppDialog.Response(actionID: nil)
         var finished = false
-        let finish: @MainActor (AppDialog.Response) -> Void = { value in
-            guard !finished else { return }
+        let finish: @MainActor @Sendable (AppDialog.Response) -> Void = { value in
+            guard activeID == id, !finished else { return }
             finished = true
             response = value
             NSApp.stopModal()
@@ -452,14 +452,14 @@ enum AppDialogPresenter {
         let closing = NotificationCenter.default.addObserver(
             forName: NSWindow.willCloseNotification, object: window, queue: .main
         ) { _ in
-            MainActor.assumeIsolated { finish(.init(actionID: nil)) }
+            MainActorCallback.perform { finish(.init(actionID: nil)) }
         }
         // The same visible panel is the modal window. Returning from another
         // app restores that panel, never a hidden completion owner behind it.
         let activation = NotificationCenter.default.addObserver(
             forName: NSApplication.didBecomeActiveNotification, object: NSApp, queue: .main
         ) { [weak window] _ in
-            MainActor.assumeIsolated {
+            MainActorCallback.perform {
                 guard let window, window.isVisible, NSApp.modalWindow === window else { return }
                 window.makeKeyAndOrderFront(nil)
             }
