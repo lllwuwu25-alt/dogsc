@@ -1,0 +1,37 @@
+name: Validate Ventura video color
+on:
+  workflow_dispatch:
+  push:
+    branches: [compat/intel-ventura]
+    paths: [.github/workflows/validate-video-color.yml]
+permissions:
+  contents: write
+concurrency:
+  group: intel-ventura-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  intel:
+    runs-on: macos-15-intel
+    timeout-minutes: 45
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+      MACOSX_DEPLOYMENT_TARGET: '13.0'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add regression tests before repair
+        run: |
+          python3 - <<'PATCH'
+          import base64, subprocess, zlib
+          patch = zlib.decompress(base64.b64decode('eJytVm1v4kYQ/s6vGKFKNQKMcblcYjUNiIQUNdHleGulXIQ29jhsz+xau2sIOuW/36xtkgtw11bNflkz65l9nmdeTMTjGJrNB26AtSaojW6dy4dxv5emfblMmeH3POFmUxzNeISyLxOp9g9dveaxgfu3iFIRuIaYJwhLGSG0Pe+o06lwEeEjeMVy3ffeL+86x6zSbDahFeGqJbIkqdTr9TfC0O1C02t4UG83Oj50u5U6X6ZSGejNBjITETlJ8WzsS4WXiqULHupXxvymZ8sIQ6kiVPbk2fhX395bqXcNbeyeaJcHWwKVeqUec8ESCBOmNfwIfVCG6zON8KVSB1qtFsxYkqEGhTYwRnC/gRkKkyn2s7VS6N6spzWaPxU3qIYizQysWMILnoBKSeUW4VLFV8wgJEivFEEmigkdoxpkIrTvE4wxml/HRnHx8Bucwm3hald1OJnOR/P33sncrza2P33K8vz3q0trueICmbJP4+ubycV8PJn73nFnfvOx2tiL43u+9+rVjn88b79Y/I53PW+fnLzb+t5ZOe1DTGDB5FqlRAIL6lONupRmnKWFXLv0nBqYhZJrvVU4DycVhFSvIXABt2XMvjW4C/+o0wB3gauQtlTJEeqO7999626XVTRTCek1oOq/ZoI9oHIjjFmWGNegLQumNudcYWik2rz2tstlaYoiItVvmFnY8pCCyDjT6fDcqblZxqMiKbV/8r14NCi0JZuTcjPS5frDrC+FYZQfBWdQXcpVFQLa0051JyCBpne+gFGbs4NsFJI3DomUw0xgadfgaV8OmRlbiqc2EJSifshtzj4DlQkqvFAhim2njTIxkZ9ROHQ2PA/KDiSOI/vbqTVAG6r/5SUSp7zWA2jXGvuxCyDT0VWOtQFrHplFADaxC+QPC1M8x4otcUTtEYAbp/rIOxAqFzQotgZ1n0WkxxtNWvSyiMsAYpZobIAUE1RL2/kDxhNiHpCic1tfO0rV9oXj4kU3GglTsabx5Fxz28iOwjihEiIZgpJYzQ0XPIkUigOFEXOlDV39k+cm7B6pQE+hurJTKB8UVXg6c1d2wgDTZwcmyQF41AQpKsNpKO1izJG7BSyaIhalPrvtzV7G3s2z8x+4udsHbFHcFnVO9ZDvdwcwmLKt9xC8gNteuzsB7L07Ecnd8lZmojJ0vjcY3bBoIO1sbz9UbNVPRdfVgu2YpjL5mzKm4fuATj+9xPy2HctaedqbexePdrz9z7FXJjP/XJddSh+34ZKafWB7YZsw+4JjySsWUq+4OlLnqD8bmdZeB/tRVmwQl60OVcK/zNRbZam6mxd8LP8d/Jf0UE6eKl8BnGsOHA=='))
+          subprocess.run(['git', 'apply', '--check', '-'], input=patch, check=True)
+          subprocess.run(['git', 'apply', '-'], input=patch, check=True)
+          PATCH
+      - name: Reproduce unsupported Ventura writer settings
+        run: |
+          set -o pipefail
+          xcrun swift test --scratch-path .build/intel --triple x86_64-apple-macosx13.0 --filter VideoColorCompatibilityTests 2>&1 | tee color-red-tests.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: video-color-red-test-log
+          path: color-red-tests.log
