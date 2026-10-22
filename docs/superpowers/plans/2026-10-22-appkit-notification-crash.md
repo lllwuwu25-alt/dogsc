@@ -1,6 +1,6 @@
 # AppKit notification crash implementation plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Fix build 20's confirmed Ventura SIGILL in FirstUseTourController.observe, retaining recording and keyboard behavior.
 
@@ -27,9 +27,11 @@
 
 ## Task 1: Notification/void callback boundary
 
-- [ ] Add a standalone real-notification regression using the production boundary, preserving the old assertion behavior for its negative run.
-- [ ] Run the probe on macOS and confirm SIGILL for the assertion implementation.
-- [ ] Implement MainActorCallback.perform(_ action: @escaping @MainActor @Sendable () -> Void) using an explicit Task hop.
-- [ ] Replace void actor assertions at legacy callback boundaries; keep synchronous return paths separate. Guard guide callbacks by observation generation.
-- [ ] Add actual-guide AppKit regression for deactivation and close/rebind. Check all original XCTest and packaging tests, then Release compilation and bundle verification.
-- [ ] Review, commit, publish build 21, verify downloaded installer metadata/digests and deliver with remaining hardware validation stated.
+- [x] Add a standalone real-notification regression using the production boundary, preserving the old assertion behavior for its negative run.
+- [x] Run the probe on macOS and confirm SIGILL for the assertion implementation.
+- [x] Implement MainActorCallback.perform(_ action: @escaping @MainActor @Sendable () -> Void) using an explicit Task hop.
+- [x] Replace void actor assertions at legacy callback boundaries; keep synchronous return paths separate. Guard guide callbacks by observation generation.
+- [x] Add actual-guide AppKit regression for deactivation and close/rebind. Check all original XCTest and packaging tests, then Release compilation and bundle verification.
+- [x] Review, commit, publish build 21, verify downloaded installer metadata/digests and deliver with remaining hardware validation stated.
+
+Completed: validation run 39699546499, source a60c381623aeb0dd0ebe669438e16cdf76d4bc3e, 4 Python + 13 Swift tests passed. Release/signature/Intel deployment checks passed; downloaded application metadata and digests verified. Target Ventura recording remains a hardware check.
