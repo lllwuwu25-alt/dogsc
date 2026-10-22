@@ -80,7 +80,7 @@ extension NSEvent {
     /// must leave these events to that responder instead of playing or editing.
     var targetsPresentedContent: Bool {
         guard let eventWindow = window else { return false }
-        return MainActor.assumeIsolated {
+        return MainActorCallback.syncOnMainThread {
             guard let responder = eventWindow.firstResponder as? NSView,
                   let responderWindow = responder.window else { return false }
             return responderWindow !== eventWindow
