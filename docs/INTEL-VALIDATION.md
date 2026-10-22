@@ -20,7 +20,19 @@ Both tests compiled; four assertions rejected IEC_sRGB as intended.
 - Capture and export share Ventura-supported Rec.709 writer settings and buffer attachments.
 - Core Image converts export pixels into a Rec.709 destination; it does not merely change metadata on sRGB bytes. Preview and the native macOS 15 capture backend retain their sRGB contracts.
 - A rendered gray-patch regression compares converted pixels to ColorSync's conversion and checks that the video values differ from the source sRGB values.
-- CFBundleVersion is 22. Full cloud validation and a source-pinned public installer are required before delivery; real Ventura capture remains a target-hardware check.
+Cloud validation passed for source `25175ddaeaa753f3de375527cf4e5558b7963461`:
+4 Python tests and 16 XCTest cases, zero failures. Release compilation, deep
+strict signature verification, 6 Intel Mach-O files and macOS 13 deployment
+checks passed in https://github.com/lllwuwu25-alt/dogsc/actions/runs/39770253551.
+The release tag points to that exact source. The downloaded installer and ZIP
+match GitHub's SHA-256 digests; the application is build 22, x86_64, minimum
+macOS 13.0, with ad-hoc code-sign flags 2 and UUID
+`abbe0cef-595d-3660-b85c-5a5273255147`.
+
+Release: https://github.com/lllwuwu25-alt/dogsc/releases/tag/intel-app-build-22
+DMG SHA-256: `d7ce247358793ca0a65ceab44da6d79865e64f4a4c7aadadb5c1f6047411b00e`.
+ZIP SHA-256: `a7f5c275a4005d495c0b7711711863074f4e65cc8efd1fbdc014a82e1859d178`.
+Target Ventura recording, audio and export remain a hardware validation step.
 
 ## Application build 21: AppKit notification crash repair
 
