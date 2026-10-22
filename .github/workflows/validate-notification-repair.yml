@@ -1,0 +1,72 @@
+name: Validate notification repair
+on:
+  workflow_dispatch:
+  push:
+    branches: [compat/intel-ventura]
+    paths: [.github/workflows/validate-notification-repair.yml]
+permissions:
+  contents: write
+concurrency:
+  group: intel-ventura-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  intel:
+    runs-on: macos-15-intel
+    timeout-minutes: 45
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+      MACOSX_DEPLOYMENT_TARGET: '13.0'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply reviewed source patch
+        run: |
+          python3 - <<'DOGSC_PATCH'
+          import base64, subprocess, zlib
+          patch = zlib.decompress(base64.b64decode('eJztXXtz2za2/z+fAtfd2ZVqiZZsSZbd8SaO86inzmMtp70znUwWIiGJG4pUCdKPZvrd7zkHIAlSfEh2km1vy2lDSQQOHud3ngBox53NWLc7dyPG9yZBHNpC7j0L5pOz09VqD/5/G4qZCIUPv1vyxp1FbLpZuUeu74hbNhwM7OFgaFnO/mw4PZyxfq83GgwedbvdTVt8tLu7u3GrT56wbn//sHPIdtUNfpi5PveY7XEpGVS64P485nMxEVHk+nN5zN5MpQiv+dQTb6b/EXbEPj1iySXvZCSWF4HN8SmWEyE7Ya+DyJ25No/cwD8TfiRCyxEzHnuRxR0nKdjK6OA1C8LXfCmO2euJImjZcQjdj9S3Z65ztoDOCZN4hwXUp2Pmu16H/RKLGAhYS+76GfE2+8R+vhH8I5PCm71nHxg87ZpNv4Lyp3YUhBbMQrwU5zLweCQcGOpuabkz7nlTbn+0ViKEfi/NOUkud0btPbbgX+gi9JadnDBLTRl0ST0EHoVCLl6EwdLgV6vNfstTNL7+9shpAmbCvZ8AZ8HNWeBHYeB5wIY6lNZX0pDtc2c4OzywrJ59cDib2c2QbSBbjd+Gigjmg33EMv27DuWq+kVmGcBTRa0b1/POvEA+HGu+QYCZBfHyRAS9hWYc1e75M5CdllnFUk0yLh+nvWtDk6uWksVzB+QDSsOkuL4btb8CrEE7hA51HUfYoU831DHoPP5k2elMP7bUk846GXUVR3/CiuNqKQptJjwpYHJDEcWhX5QOvKjtlfAd4DmIkgQKatpPkGEEl0Ef4UL/3g8uHOT4mqh+Rm0HbXsJvx3XeSrsYClOsaUK/FGV35m2K4NFKKCLMkpwUcabzbgKnHLlwqzY0rSPk0baRXVZryPP+ApaFM/EtWuDrdMKulo91pXXmpHb095gJsCYD8b98WC/QTPWUqxQirV1yLgPB2Tc6VaA+Pmbiaqoqaj6wZo6xCtBWghYDB0R/lQlxuUY3AyH9VjU9jFeOfD9LfeFR0Zxt5LCOkorSBSAUvy4KXRcufL43RbYKa2gwSP4wYwjeOyhbQ+mgw3BU06yAT3llcic9sic9tbBU1Z3HTqmgcw/+V3pqpznBYreh04LR49NtqLgo/CPGd3W1IrxsR4mzx0XuvOKhx9FeOHKSBuUapjUVtAw2e9zMZtNLWtsH9rOwUEDTOpJVsCkvhJpmfFBpz8CNQP3/SFCZRWiWRQ5yJh0zsA4aPUtwvqQojDNeGnrIK6husmAFClzL5hy71XgY4tokSfPsSya35fmoxdBSA9ka8kjewHG6Jj9bHliFr0KYimeBTdgZa3QnS+yH943g/SKy49Q6EkKQiihQea4culKmVddX7G7HUYfV6j8dNc3lps1VVtm44lyRxt4/AxO3In6dc24rxGkWukU5Z+vK2a8oGvMB78JZ/jn1F8Hr+lVUPSWzKeXQrq/Vj0v9fbfwwTkmBxoP05afIWeTGtDty919LDbmQ8HrBJh3of7TBazFHL/jRE0YW9r/H0RDDbhsABA+tou1UIPnt+1UABhO/frQoG1UPQhJrUOQL/Dwf3/0G3txOtkGzkUb8FFwbFM4nDGbdHkTpQWT3zOUf/Igd+sYU+I2VRs5EyUE6x1JcqroCOxDw4EOJzqVvA4X3MExpW7FJ7rC6SxENx5PfnRFTeIJryXOXcKrApAtueusFxF/qE6eMFrM3WcA1p9EHPB70B+yqOYHJmGSMags0bjt2qHFS93RsB2Ahu66Uc0hxCd25jpwC8g/OajT4pLR4pLR1+IS2aTf3GKPlKy6pCSm+pWO+1vQNFew+TVT3uDUHz+CG2jKX3IVJpT2ITsIrBzYzefWatARvJFCEZLrTc4pnGSQDQKY6E4NFb5xHFJQvE+HDK51CAUXynvUicIDxWCvBelb5uYwGRSvweXP3wZu06jFayqoQ3hdDA+EvvcshzHnopp0zJcA81aW1hZi+LqPiladavFU1Y9j6gOK2kG188oZV2SCSH50OG4TpbfK52dXIa7R8I0DWLfkQ1rd6lG+tp6/m0gXcomP1jT5yitUbn/Wp5ipwpUL9yZsO9sTzwNXWfeCPqaShr3ztQZHzgHlrXfGw+53ZSxbiZbC/26ipR8HHVGbBf+XcO+qmmgtEyJXvOQrcIAEXXlRh6gaBKFrj/Pnga+Cjl+EHfHZrIGeNb9J/sxcB2zLAUmbnSnjUC+xtMg8LJahJwkBUa1s66+FBAl06dj9u7cj0YDELGeami9CijKY8xrqLTY2zCIAjuA4OaE/fze7NzEDoXwJ+6vorR7Zy/x0ePCuMzmYF6jjMgx0zWIEaNBZ9Bnu6NhZ3RwL1bgJaNgpYoBD1qGqs8CLb1qWLkEpCRLtUgsNcMoJDBP5xYmqHTOM2K01krarFbFZRXWAl5Vuzy4xTLJzolU2XXK/a97hOw5TVSv0nLTtaXZ3izjQoFt6Wzj+q3Bk81TL7WcTq4a92ErXhXzgqQQcoapnG96KftLsM7QTH8cpuU6vRW7qpO4ru9yaLg6VwuFnollRbGKXQZmZSWZb2zbiyVUmUTAh+qmnt+uStLCBXRsAb18AvULAkoJVGLC/jiYKvZ7y1Rs+rGAsI13WGyepKzEWoHA9+ij17fxzl8UCn1OlH1Zc/MXxNaUmFIxyrmqVi2q1FOYE9oSE8DERK6Qf1hdkzmTfzQomD2/Lxi2dEAKCsBEzFuOmSeoKzdwSb6sbP8JWVop1LULyOgp+M4FmIiSYhs4JcoeFb3QrR3VUtrPb93oRex5fx59xD2YqauQz6DfF7g3Yvv85X8NvmV9v69OKhEFSjIe9jDP0i9bzdkouseVSvqQbvqJfbsY75tzWD5Ff989Yf0yDQoseM7tBUxYTSYyFMvgOj1y0Ppbr12ujlW5U88zUxCY/EgcAL07uD4L98INZXTBYZyLc9wM5cQNW/5qK+js2+HR4X5/KizrYHAgxHjckH2rJ1mReauvpHbQ9zr9fdxDT/cCICrqm4ogJM30hfdE32OvwGddw1IbkFt6+7d4JmTk+jqrN+Mg3vdY19qIZplgSxLpLzfZG7gjv+NjN0pL/8/riRqApWZL0qkEoCNbNwsRQm8/sb/1rBmODrW1KkWrfqBPN9uWvgkLi4l/Wjbcp2226ra9wCUXDkjcRpYTpznQntUfrRechtx3wC767pLDJLbaYGZWC/4j92KRJaPTPgLh5QqsHJD8Hip6uGHz0zZ2eDtTu9Zdo8u09/xNHLUAZu3akjQZ6bIvavTa0rjbDyzCBlr/nRRX8KBB1edKJdtrxrYzGjiWNXZmoieGm+j3PJ06pZ4vSZq8f9Q5AkVOtzJY6SrlJ1vqgpntt3o1+rZb+4Eb46l0PfCzuW6l1Ika2EGQglZ7vUiJw/flXMl8X5p2neH12XJlzXajOYJ42JbUzeLheqm/1EdeXoHnWC3166W01I8HXPADblmHw8PBYf+wQepL6FRIfUlJdZy3r47zluxBMatkUo/yqdYXO2sb8bOY8JnwxBz0+Z/K7dBmHYyJjEIodRWo7txn21I5kTJh1MJM+0o32weTMFZtCtGsrTmCXlde4/boqDcYD2aW1RuP+eCo6QBSLcUGBJfWoY2G+0e00ZBulVj246dxFAV+tvNFfa881jtBlbjAnTDZ0uy9kZRrYm8P+tUNBcdzjSxaCLYKXFpjdiVzHbFcBeiVgH4P6KkEFQcPl/yO/QcKAj1rS2jqQ0u0r4cWr+4DzXIiRWg270hOeEJH667AtVJ7YJpxWFohCYuHo5E9HFnWcNY/4qOmA+b1JBuQWF4JoTgkrTqsUaqFukX0Jd555C4BGy/Aodc++tnpK+G4/Cr3e8tX2wgEl+Lcfw7/gtdb8HiVq1TpxgcrbrvRncHGDRz5GrxllR9vh7FixRJcbarf3gYrxOgGgDILJv73ARcHRwAkPhpPp7Om/Eo5qSYA5QoTcMaUTsHbuBI6qlZ6IO6v429/HX/7csff/jre9tfxtgccb9O3eoWtPNwr0GteML+r1tdl5dIT8NPDfQ6BU78vnN7hqEFdl1Kq0NalZcnhHNARC3UrKOt8pURbGZq63TFjo4VwYk+ANwWx1KXyr47ZEyFtvkLfMPdgokuj8vvEcKmt/P0wl7F/EQQrwl5dhuOLpuLS7rVKMnBrG5tpVkdjmlW6bTur1OQf6TUCCes1b09noGeKQawKOooTuMU2cKXK4ZMAmr4tNnG2m+pouRscjAZD4VjWdHo4Ho6aDj80Uq2QwcZ6lBkfUWJcbwGHSG/JquvV5cQ39Lr1m4reYtAmj1nPGnRYD/6z9jusXwJ36fOVXATR18ulZ02qlUx8T9gkXqnTRPc4l9NErRqgZTi9EjLKeHwGYwVNMXU9iEPUowsx53Yu9Uu/p6B9GIFHvrgB7eIJtgyc9PiqgnVPXQDrg4OZGHDC854jrvf82PM0Sh/YPEK21+mx3X5nhM7+o10XIv4wwrdJ/eBG6dcJln53nn7/3zOk8mj3SQQ3tAtMP0h68mj30a6pNSu6cawpnXF0AhQSMi9cfafFeWwHXGSQDYcODU1i4Pi1kEYG7tTXr+HKnXYjbXYppi69uQkQwuUd0luEwY00lecH8uPNjJ5c8FA4hQ372DiULF+OMF4chk4ZqPnk9UOGz0IkrFUoVkD+UuAbW4rHAmZIHVpZ4ohpvGaJvT32NsB1ujnjODpVDL+KWxHarhSScjVZZ/4h8b1fMXAjdTE7OXqub3txmgIStxzf2LZadR2RvS+M2Voa0XXHYj+CRxqHHFw3ZL2VEazPx1dvSC11/TbYkLppxcqVgEoCddun3hdNb423jicydYaEfPT1BlOPQS/n1rfNHmuM6Cy0gQ5Dn27WoS3WuqjNPBKfgVPO/Qg0AEJiAWTZVAAAhPJ0HKZWcthNEH5kYezLDhb0GQok4wz1H8UpJnywlZL10GIBvQSakxwJAwDCVaLj4PspKRDDYuttfJc+UcRzQb866xhLCs3a20/z1jtCiqyNwjvGbzgYLkxYWNITYqX1zBJCZFf1XbbAjLTzXHod0EwbwrzgkgU2vZ/UsdgpAzUOPAw8p0vsSNi2jIGhfhDlqAEX1SwQz0NUYbbAo74WAx8yeVXoR+idJMWNp9qmoJSCOGLBjCqBcrEKnFMkBTLvlRuG4JqEmhimTWj225a9cD0nFL6l4E9bIDw+pYiS7bhyklDZYb89tq7JqcFXT+Jxt6w9MDqnEhRh9PwXUIqttOkOnYxulxQEBr12oeQabsoKXwGRkqLJuyQp+FWPde3f0Fzih0rb9y8SpjfImhzcuA/MeaYC48uMETo/92Bzp7CQaaOWHs6lxifeW7fHbAg+55263bhOBIHjfg8+LwSmto7Rr2kXdJ6M7jzxCmCMGbEIT0w57ztsqnZvAqCn8QxfJQssIZlNd6Nke/JIa7gwag9zzs5PoFUoSYQAosL5oYDrvdDJOmRGizbOmGPoqzH0szEMjCEc5ERKNZ5XH6qBYhmy/uCl+noLSK5PqzR/elKZWi1TX2m9LCfyXdKndcWVlY6C+dwTLdc5ZjuhmMPveIRIydJOR4/gWN87TI/vmJ36dzRnVxCZtHbI99lpt9N56o97lWKge4ViqyAkH6cbmZT4uumbUh9bIb/RgcgJ9lDNCGhRlaNe6zKEJycnRZnd3uqtpx5zKbT2FlNpKMPNJ9QQ3Oppvafy/yrcMEfN/v53oiN/dKWLkUGRR5XKLrcb17TfeAg44Zepw3Iv7m1SUUq6v6KC0qtdm2koXTivUV5Pvld+PmElDAJ6cJzv51ngBSj2godqM2CraoBKaHTQ0kpDkw4TPoZwTjKE9THkjBjEK2DIJ/E0CoU4n70WAiynqaV0KlfVTXleCLydwJZ7EiP3VXAD8cgeIMiXe/u9/VG33+vu73fBRfjoRl3zZdJdO+RyYS0diHwfRmCjwFsMhTOc9koD7wc2bwTeB0MKvL/RMXf+hdtUAYNrj6RL/YhNoRD9k3377QuwaXyOMmuTj43n77/9ll0+/9e788vnz9jk3dPu5Ifzi4tjBpxnRo+PIVq0Y4RXl/rOoiBrCDwGV1JDLAIZ6E7vuni32CRCry4GUvZC2B+nwS1r/bvLfmbv/91m4GtE/JbivyhUkmJhR7/99mXAPezXC/eWTWNQPwBPiEoBWADKJUhEEkxOzl9CZzFyrAixdQTbQZiB/sCYVSGZ4mHwST+Ku2mAaxBTseDXbhDqLpyGoPci0AZxKLAr+FoBPed7L/AlH/koV0IYjM4RSP5dmh1H39UN2btzJjEPIEAF2BE4tr6RAGMT8LjA3/KDWKolTwQa2AzsoHKKXaijpKSrXFQK1SnohgHAxHMIxjF7JjFJADrRu9M+OvTSC3yhEjIsU8HMCTEdonZwZJtu6eUlHCzHLAyWDEN17jFjsDmsoXWENkG4aXDAeo4D+i4BpkrVQF8xf6C8eJVUUEmRGzdaQBNLlaWhUFDP/JWwF7h+YH/EeVddH3U02Y7Rnw57exctoCux70bo9nbYSzf6Pp6yJbcD2e0Pu7g5xdN0JythI0UACaY4MtlLIablR2UoaHJTXFvs+a2rsygxNBq6v2oAqPG5Pr5+Blh3C9OKNVfxFOCA4P6o6MvvGFhITRwZijn9xIpRF7/5hqn1YJbupYokPuiycxwHux2PPowGHRzemwnrH1i93Q7DIVIglMgE/H5oDSBkC50b8NEtrP8DAInZPmjjYB7ElhPMpW3R5DBlwqM76rVIB+l0F4HNMOZUMrPibkikngWIA2gWnctowTEWs23A1Sz22Nk54omgxcO5iLpJLzKpM4mAP0rpQEKOUhHYmlowB0FCbSUz+YBftO+gJWWhcsxS9YOiT21OcrWS2b0UmPcFntixnlcAFctlrW4WqOVt9fZnFKEwilcoY1nAmQS5Ci00HO1skDe9F1L6MCsGmt3D2cVsWgBOCKgF0FFZfgwUKTfD4kQWujnflK34nRdwR5rtBzKVLJiqVHxRtjB61q+HwdrQyAS6T7NNSkRSC6eU11c4ThL3qgGAgedhCkbl95AZvi2+g4ZZ+mc7GL3YJtMWK8EJPMnQVBNoMwHTjgu6aK6IowJz/ZiUD0IHK2m1wam/IB8cBkYAA70jFChj2k3GMYu0wh0SDEWoS5kjlTECLbhMmE27NPrHuUncu0Ytns58MmEKC2CU2KmDaSZDc6IKzBllU4vGMt0Gt65EO8r9p/NhVCYAHcPJuaZi2tyQ+UMN7+P2U9DKOOdW0p/L2E/oTwUaDiX6KKraGCYmkKwoQiFtIe8GpCTPU6NduXDS+qDZYK7oGttdnqRQyl4l1Nazwf3UEioWLIJVNhwtvcQGBdq0v6A2I+ZR4n+NQ64A7YnG0JTrbB9ptJCp7bPYS9pSoKxMZp6nd+a5PGOLuZXjPZmorqqsEWkwHCc5py6IEYbUW+wMlRiDZkF5uXNa09CWkKwC9IXPCRG4oKGzm9rlJxl0vYzyNEb1xsDAZH8gJZvKa3qDGNRZolkkewPGS9uyfkdVu2OgmHxUHKC5IGyLOB2EWII3BEYUHGt3jh2h5hzhubjTmUyzsk/Y01SFg95wtScgcRelY+WddGmH7ioC31YtVijj21WDsFZ34AY3lEh2RtjDwcF4ZFmD/uyo5xR2RjTRUA53UynaSk67b/t68y3EZUyXbqly7eN0Ax9eYPECfd66lRjN9vojY7lz5+zFU6L0I9gomLYdiP73eztG6Fhaor9j7ALYuZjgW2KW8XJCf0jJKIgOQK7o5N1zis1O4yhAtW4TGCWUfYGhWr7oqedBQJ8WfUe9N8rmWEto3QPvBs2i3EtVgalc36KOSlc6t6yhWX/gcAgQgfXicDAbHhXe0LYtTQWFbWshNI7wyPBRpz+oetk/VcAV+eQhLd4j7WSZ3shX6AwBTrNOV8CjmmyrO4M4fbnkeMbeFxZ4UvRqTONM3063Gwq07V3UbvMQ1eROu7jEhFlbIwnkgNBjZLLZNhns2xsff79a4I5v9okN9ovr77+ppHn+xxkoFu855eR3nqbdy5T6DUd/GdxB8AnRseDgPq5AneyUr0th3sZdLnE7Q4SLqRt1tX9YyGliuku9sdCgdQLlzHPSQi8+QCvE4FbhYc0L1YpF1cpcrqCF2+5aO7Toba2P4jK1MzvtMunDfz8gcj6Q5fyQ+7tZpF43Kpec25naR2KIf1ljYPdE8e+abUbJlK+msuq8Q+cAjzsohasEqVQcabW/lYR1VrLmnyjk5MJVJ4/+3FI81Z6kBd5T62cInloqX4HqsP2+k3j0H8AtXsXRCaY3wfiK2/SjuxTw7KTfK2yDUa8pMJZ/VKOWcj7swBG0hUb/KiMHHe9d47sIw2qS535rJ+flp0ICOCZZzbwu0w/fKbRY2OSodANlDhumpsNKVcn7kjXnbaYwnxvNxgtjTWZR9TA/j9UVcaK0P2a6gMZ0/RK7oU5pUGQdkSqgidJNJcz4P7r9Rq4='))
+          subprocess.run(['git', 'apply', '--check', '-'], input=patch, check=True)
+          subprocess.run(['git', 'apply', '-'], input=patch, check=True)
+          DOGSC_PATCH
+          git diff --check
+      - name: Packaging and actor regression tests
+        run: python3 -m unittest discover -s tests -v
+      - name: AppKit and core compatibility tests
+        run: |
+          set -o pipefail
+          xcrun swift test --scratch-path .build/intel --triple x86_64-apple-macosx13.0 2>&1 | tee swift-tests.log
+      - name: Commit validated source changes
+        run: |
+          git add -- Sources Tests tests scripts docs/superpowers/plans/2026-10-22-appkit-notification-crash.md
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Fix Ventura notification crashes and synchronous AppKit callbacks'
+          git push origin HEAD:compat/intel-ventura
+          git rev-parse HEAD
+      - name: Build and verify Intel application build 21
+        run: |
+          set -o pipefail
+          bash build-intel.sh 2>&1 | tee intel-build.log
+      - name: Upload installable files
+        uses: actions/upload-artifact@v4
+        with:
+          name: DogSC-Intel-app-build21
+          path: dist/intel/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Keep compiler diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: DogSC-Intel-app-build21-logs
+          path: |
+            swift-tests.log
+            intel-build.log
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Publish application build 21
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          source_commit="$(git rev-parse HEAD)"
+          gh release create intel-app-build-21 dist/intel/*.dmg dist/intel/*.zip \
+            --title 'DogSC Intel application build 21' \
+            --notes "Validated notification crash repair. Source: ${source_commit}. Target: Intel macOS 13+." \
+            --prerelease --latest=false
