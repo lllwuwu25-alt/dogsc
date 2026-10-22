@@ -210,7 +210,11 @@ final class ScreenRecorder: NSObject, ObservableObject, SCStreamDelegate {
         // transfer contract used by preview/export instead of changing the
         // transfer tag after capture.
         streamConfiguration.pixelFormat = kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange
-        streamConfiguration.colorSpaceName = CGColorSpace.sRGB as CFString
+        // The legacy AVAssetWriter path needs actual Rec.709 pixels because
+        // Ventura rejects IEC_sRGB writer settings. Native macOS 15 recording
+        // retains the original sRGB producer contract.
+        streamConfiguration.colorSpaceName = useNativeRecordingOutput
+            ? CGColorSpace.sRGB : VideoSDRColorProfile.colorSpaceName
         streamConfiguration.colorMatrix = kCVImageBufferYCbCrMatrix_ITU_R_709_2
         if #available(macOS 15.0, *) {
             // Keep capture and the writer on one explicit SDR path. This is

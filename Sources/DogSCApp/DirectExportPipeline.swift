@@ -135,7 +135,7 @@ final class DirectExportPipeline: @unchecked Sendable {
             throw VideoExporterError.exportFailed(error.localizedDescription)
         }
         self.colorProfile = colorProfile
-        context = colorProfile.makeContext(cacheIntermediates: false)
+        context = colorProfile.makeContext(cacheIntermediates: false, forVideoEncoding: true)
         self.canvasSize = canvasSize
         self.project = project
         self.frameRate = frameRate
@@ -644,7 +644,7 @@ final class DirectExportPipeline: @unchecked Sendable {
                     outputImage,
                     to: destinationBuffer,
                     bounds: canvasRect,
-                    colorSpace: colorProfile.outputColorSpace
+                    colorSpace: colorProfile.videoOutputColorSpace
                 )
 
                 guard adaptor.append(destinationBuffer, withPresentationTime: outputTime) else {

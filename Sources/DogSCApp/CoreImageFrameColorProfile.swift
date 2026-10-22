@@ -13,7 +13,7 @@ enum FrameColorProfileError: LocalizedError {
         case .unsupported:
             "当前版本只支持桌面 SDR 成片。"
         case .unavailableColorSpace:
-            "系统无法建立 sRGB 色彩空间。"
+            "系统无法建立 SDR 色彩空间。"
         }
     }
 }
@@ -25,25 +25,30 @@ struct CoreImageFrameColorProfile: @unchecked Sendable {
     let contract: FrameColorContract
     let workingColorSpace: CGColorSpace
     let outputColorSpace: CGColorSpace
+    /// Video encoding has a distinct, explicitly converted output. Preview
+    /// stays sRGB; encoded files use Ventura-compatible Rec.709.
+    let videoOutputColorSpace: CGColorSpace
 
     init(contract: FrameColorContract) throws {
         guard contract == .sdrDesktop else {
             throw FrameColorProfileError.unsupported(contract)
         }
         guard let working = CGColorSpace(name: CGColorSpace.linearSRGB),
-              let output = CGColorSpace(name: CGColorSpace.sRGB) else {
+              let output = CGColorSpace(name: CGColorSpace.sRGB),
+              let videoOutput = CGColorSpace(name: VideoSDRColorProfile.colorSpaceName) else {
             throw FrameColorProfileError.unavailableColorSpace
         }
         self.contract = contract
         workingColorSpace = working
         outputColorSpace = output
+        videoOutputColorSpace = videoOutput
     }
 
-    func makeContext(cacheIntermediates: Bool) -> CIContext {
+    func makeContext(cacheIntermediates: Bool, forVideoEncoding: Bool = false) -> CIContext {
         CIContext(options: [
             .cacheIntermediates: cacheIntermediates,
             .workingColorSpace: workingColorSpace,
-            .outputColorSpace: outputColorSpace,
+            .outputColorSpace: forVideoEncoding ? videoOutputColorSpace : outputColorSpace,
         ])
     }
 
@@ -62,31 +67,10 @@ struct CoreImageFrameColorProfile: @unchecked Sendable {
     }
 
     var avVideoColorProperties: [String: String] {
-        [
-            AVVideoColorPrimariesKey: AVVideoColorPrimaries_ITU_R_709_2,
-            AVVideoTransferFunctionKey: kCVImageBufferTransferFunction_sRGB as String,
-            AVVideoYCbCrMatrixKey: AVVideoYCbCrMatrix_ITU_R_709_2,
-        ]
+        VideoSDRColorProfile.avVideoColorProperties
     }
 
     func applyAttachments(to pixelBuffer: CVPixelBuffer) {
-        CVBufferSetAttachment(
-            pixelBuffer,
-            kCVImageBufferColorPrimariesKey,
-            kCVImageBufferColorPrimaries_ITU_R_709_2,
-            .shouldPropagate
-        )
-        CVBufferSetAttachment(
-            pixelBuffer,
-            kCVImageBufferTransferFunctionKey,
-            kCVImageBufferTransferFunction_sRGB,
-            .shouldPropagate
-        )
-        CVBufferSetAttachment(
-            pixelBuffer,
-            kCVImageBufferYCbCrMatrixKey,
-            kCVImageBufferYCbCrMatrix_ITU_R_709_2,
-            .shouldPropagate
-        )
+        VideoSDRColorProfile.applyAttachments(to: pixelBuffer)
     }
 }

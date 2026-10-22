@@ -231,17 +231,6 @@ final class CaptureOutput: NSObject, SCStreamOutput, @unchecked Sendable {
     private var pauseStartWallTime: Date?
     private var accumulatedPausedWallDuration: TimeInterval = 0
     private var firstFrameContinuation: CheckedContinuation<Date, any Error>?
-    private let captureColorSpace = CGColorSpace(name: CGColorSpace.sRGB)
-
-    /// ScreenCaptureKit is asked to convert the desktop into SDR sRGB. The
-    /// gamut primaries and YCbCr matrix remain BT.709, but desktop SDR uses the
-    /// IEC sRGB transfer curve. Retagging those code values as BT.709 without a
-    /// pixel conversion lifts the midtones and produces the observed grey look.
-    private static let captureVideoColorProperties: [String: String] = [
-        AVVideoColorPrimariesKey: AVVideoColorPrimaries_ITU_R_709_2,
-        AVVideoTransferFunctionKey: kCVImageBufferTransferFunction_sRGB as String,
-        AVVideoYCbCrMatrixKey: AVVideoYCbCrMatrix_ITU_R_709_2,
-    ]
 
     init(
         run: ScreenRecorderRunToken,
@@ -282,7 +271,7 @@ final class CaptureOutput: NSObject, SCStreamOutput, @unchecked Sendable {
                 AVVideoWidthKey: width,
                 AVVideoHeightKey: height,
                 AVVideoScalingModeKey: AVVideoScalingModeResizeAspect,
-                AVVideoColorPropertiesKey: Self.captureVideoColorProperties,
+                AVVideoColorPropertiesKey: VideoSDRColorProfile.avVideoColorProperties,
             ]
             bitrate = 0
         case .hevc, .h264:
@@ -365,7 +354,7 @@ final class CaptureOutput: NSObject, SCStreamOutput, @unchecked Sendable {
                 // only resolution change here, at the encoder boundary, so a
                 // 5K desktop is not first softened by SCK and then compressed.
                 AVVideoScalingModeKey: AVVideoScalingModeResizeAspect,
-                AVVideoColorPropertiesKey: Self.captureVideoColorProperties,
+                AVVideoColorPropertiesKey: VideoSDRColorProfile.avVideoColorProperties,
                 AVVideoCompressionPropertiesKey: compression,
                 AVVideoEncoderSpecificationKey: encoderSpecification,
             ]
@@ -572,32 +561,7 @@ final class CaptureOutput: NSObject, SCStreamOutput, @unchecked Sendable {
     }
 
     private func applyCaptureColorAttachments(to pixelBuffer: CVPixelBuffer) {
-        CVBufferSetAttachment(
-            pixelBuffer,
-            kCVImageBufferColorPrimariesKey,
-            kCVImageBufferColorPrimaries_ITU_R_709_2,
-            .shouldPropagate
-        )
-        CVBufferSetAttachment(
-            pixelBuffer,
-            kCVImageBufferTransferFunctionKey,
-            kCVImageBufferTransferFunction_sRGB,
-            .shouldPropagate
-        )
-        CVBufferSetAttachment(
-            pixelBuffer,
-            kCVImageBufferYCbCrMatrixKey,
-            kCVImageBufferYCbCrMatrix_ITU_R_709_2,
-            .shouldPropagate
-        )
-        if let colorSpace = captureColorSpace {
-            CVBufferSetAttachment(
-                pixelBuffer,
-                kCVImageBufferCGColorSpaceKey,
-                colorSpace,
-                .shouldPropagate
-            )
-        }
+        VideoSDRColorProfile.applyAttachments(to: pixelBuffer)
     }
 
     private func failFirstFrameWaiter(with error: any Error) {

@@ -3,6 +3,25 @@
 Baseline: upstream v0.1.8, 567fd6ed3bf113227dcf3e815f87ce60f0b69497.
 Target: Intel x86_64, macOS 13.0+; intended hardware is a 2017 Intel MacBook Pro on Ventura 13.7.4.
 
+## Application build 22: Ventura writer color rejection
+
+The target's build 21 startup log records the same Objective-C exception across
+five recording attempts: AVAssetWriterInput rejects IEC_sRGB for
+AVVideoTransferFunctionKey. The exception occurs in CaptureOutput.init before
+stream.startCapture and first-frame waiting. A later process sample shows the
+UI run loop alive, so it cannot identify the already-unwound initializer.
+
+The real capture-writer input settings for H.264, HEVC and ProRes, and the
+export color settings, failed the new Ventura compatibility assertions in:
+https://github.com/lllwuwu25-alt/dogsc/actions/runs/39769216568.
+Both tests compiled; four assertions rejected IEC_sRGB as intended.
+
+- The legacy AVAssetWriter path requests Rec.709 conversion from ScreenCaptureKit.
+- Capture and export share Ventura-supported Rec.709 writer settings and buffer attachments.
+- Core Image converts export pixels into a Rec.709 destination; it does not merely change metadata on sRGB bytes. Preview and the native macOS 15 capture backend retain their sRGB contracts.
+- A rendered gray-patch regression compares converted pixels to ColorSync's conversion and checks that the video values differ from the source sRGB values.
+- CFBundleVersion is 22. Full cloud validation and a source-pinned public installer are required before delivery; real Ventura capture remains a target-hardware check.
+
 ## Application build 21: AppKit notification crash repair
 
 The target Ventura 13.7.4 report confirms application build 20 and identifies a
