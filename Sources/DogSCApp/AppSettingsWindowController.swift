@@ -32,7 +32,7 @@ final class AppSettingsWindowController {
             forName: NSWindow.willCloseNotification, object: nil, queue: .main
         ) { [weak self] notification in
             let closedWindowID = (notification.object as? NSWindow).map(ObjectIdentifier.init)
-            MainActor.assumeIsolated {
+            MainActorCallback.perform {
                 guard let self, let window = self.controller?.window,
                       closedWindowID == ObjectIdentifier(window) else { return }
                 self.pendingPresentation = nil
@@ -41,7 +41,7 @@ final class AppSettingsWindowController {
         activationObserver = NotificationCenter.default.addObserver(
             forName: NSApplication.didBecomeActiveNotification, object: NSApp, queue: .main
         ) { [weak self] _ in
-            MainActor.assumeIsolated {
+            MainActorCallback.perform {
                 guard let self, let request = self.pendingPresentation else { return }
                 self.finishPresentation(request: request)
             }

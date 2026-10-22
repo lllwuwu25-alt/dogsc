@@ -9,6 +9,14 @@ private final class Probe {
 private enum Main {
     @MainActor
     static func main() async throws {
+        if CommandLine.arguments.contains("--reject-background") {
+            _ = await Task.detached {
+                MainActorCallback.syncOnMainThread { 42 }
+            }.value
+            fatalError("Background callback was incorrectly accepted")
+        }
+        let immediate = MainActorCallback.syncOnMainThread { 17 }
+        precondition(immediate == 17)
         let probe = Probe()
         let center = NotificationCenter()
         let name = Notification.Name("DogSC.MainActorCallback.Regression")

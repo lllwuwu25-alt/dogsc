@@ -283,7 +283,7 @@ final class NativeTimelinePlayheadNSView: NSView {
                     object: clipView,
                     queue: .main
                 ) { [weak self] _ in
-                    MainActor.assumeIsolated { self?.updateLayers() }
+                    MainActorCallback.perform { self?.updateLayers() }
                 })
             }
             if let documentView = scrollView?.documentView {
@@ -293,7 +293,7 @@ final class NativeTimelinePlayheadNSView: NSView {
                     object: documentView,
                     queue: .main
                 ) { [weak self] _ in
-                    MainActor.assumeIsolated { self?.updateLayers() }
+                    MainActorCallback.perform { self?.updateLayers() }
                 })
             }
         }
@@ -472,7 +472,7 @@ final class NativeTimelineOverviewNSView: NSView {
             object: clipView,
             queue: .main
         ) { [weak self] _ in
-            MainActor.assumeIsolated { self?.updateLayers() }
+            MainActorCallback.perform { self?.updateLayers() }
         })
         if let documentView = scrollView.documentView {
             documentView.postsFrameChangedNotifications = true
@@ -481,7 +481,7 @@ final class NativeTimelineOverviewNSView: NSView {
                 object: documentView,
                 queue: .main
             ) { [weak self] _ in
-                MainActor.assumeIsolated { self?.updateLayers() }
+                MainActorCallback.perform { self?.updateLayers() }
             })
         }
     }

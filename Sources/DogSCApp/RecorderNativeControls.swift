@@ -229,7 +229,7 @@ final class RecorderMenuButtonNSView: NSButton {
             forName: Self.hoverDidChange, object: nil, queue: .main
         ) { [weak self] _ in
             // Re-reading the pointer is idempotent, so the sender may join in.
-            MainActor.assumeIsolated { self?.refreshHoverState() }
+            MainActorCallback.perform { self?.refreshHoverState() }
         }
     }
 

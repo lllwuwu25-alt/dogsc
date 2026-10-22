@@ -36,6 +36,7 @@ final class WindowObservationView: NSView {
     var projectTitle: String
     var onResignKey: @MainActor () -> Void
     var onActivityChanged: @MainActor (Bool) -> Void
+    private var observationGeneration: UInt64 = 0
     private var observers: [NSObjectProtocol] = []
     var onScreenSizeChanged: @MainActor (CGSize?) -> Void
     private var lastScreenSize: CGSize?
@@ -64,41 +65,63 @@ final class WindowObservationView: NSView {
         stopObserving()
         guard let window else { return }
         updateWindowTitle()
+        let generation = observationGeneration
         let center = NotificationCenter.default
         observers.append(center.addObserver(forName: .appLanguageDidChange,
             object: nil, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated { self?.updateWindowTitle() }
+                MainActorCallback.perform {
+                    guard let self, self.observationGeneration == generation else { return }
+                    self.updateWindowTitle()
+                }
             })
         observers.append(center.addObserver(forName: NSWindow.didResignKeyNotification,
             object: window, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated { self?.onResignKey() }
+                MainActorCallback.perform {
+                    guard let self, self.observationGeneration == generation else { return }
+                    self.onResignKey()
+                }
             })
         for name in [NSWindow.didMiniaturizeNotification, NSWindow.didDeminiaturizeNotification,
                      NSWindow.didChangeOcclusionStateNotification, NSWindow.didExposeNotification] {
             observers.append(center.addObserver(forName: name, object: window, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated { self?.updateActivity() }
+                MainActorCallback.perform {
+                    guard let self, self.observationGeneration == generation else { return }
+                    self.updateActivity()
+                }
             })
         }
         for name in [NSApplication.didBecomeActiveNotification, NSApplication.didResignActiveNotification,
                      NSApplication.didHideNotification, NSApplication.didUnhideNotification] {
             observers.append(center.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated { self?.updateActivity() }
+                MainActorCallback.perform {
+                    guard let self, self.observationGeneration == generation else { return }
+                    self.updateActivity()
+                }
             })
         }
         for name in [NSWindow.didChangeScreenNotification, NSWindow.didChangeBackingPropertiesNotification] {
             observers.append(center.addObserver(forName: name, object: window, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated { self?.updateScreenSize() }
+                MainActorCallback.perform {
+                    guard let self, self.observationGeneration == generation else { return }
+                    self.updateScreenSize()
+                }
             })
         }
         observers.append(center.addObserver(forName: NSApplication.didChangeScreenParametersNotification,
             object: nil, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated { self?.updateScreenSize() }
+                MainActorCallback.perform {
+                    guard let self, self.observationGeneration == generation else { return }
+                    self.updateScreenSize()
+                }
             })
         for name in [NSWindow.didResizeNotification, NSWindow.didEndLiveResizeNotification,
                      NSWindow.didBecomeKeyNotification, NSWindow.didResignKeyNotification,
                      NSWindow.didExitFullScreenNotification, NSWindow.didChangeBackingPropertiesNotification] {
             observers.append(center.addObserver(forName: name, object: window, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated { self?.alignTrafficLights() }
+                MainActorCallback.perform {
+                    guard let self, self.observationGeneration == generation else { return }
+                    self.alignTrafficLights()
+                }
             })
         }
         updateScreenSize()
@@ -170,6 +193,7 @@ final class WindowObservationView: NSView {
     }
 
     private func stopObserving() {
+        observationGeneration &+= 1
         observers.forEach { NotificationCenter.default.removeObserver($0) }
         observers.removeAll()
         lastActivity = nil

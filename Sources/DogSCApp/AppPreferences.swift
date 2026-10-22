@@ -127,7 +127,7 @@ final class AppLanguageSettings: ObservableObject {
         systemLocaleObserver = NotificationCenter.default.addObserver(
             forName: NSLocale.currentLocaleDidChangeNotification, object: nil, queue: .main
         ) { [weak self] _ in
-            MainActor.assumeIsolated {
+            MainActorCallback.perform {
                 if self?.selection == .system { self?.refreshFromPreferences() }
             }
         }

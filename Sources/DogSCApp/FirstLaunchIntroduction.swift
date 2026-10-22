@@ -320,12 +320,12 @@ final class FirstLaunchIntroduction {
         resignationObserver = NotificationCenter.default.addObserver(
             forName: NSApplication.didResignActiveNotification, object: nil, queue: .main
         ) { [weak self] _ in
-            MainActor.assumeIsolated { self?.finish(activateDestination: false) }
+            MainActorCallback.perform { self?.finish(activateDestination: false) }
         }
         screenObserver = NotificationCenter.default.addObserver(
             forName: NSApplication.didChangeScreenParametersNotification, object: nil, queue: .main
         ) { [weak self] _ in
-            MainActor.assumeIsolated {
+            MainActorCallback.perform {
                 guard !NSScreen.screens.contains(where: { $0.frame == screenFrame }) else { return }
                 self?.finish(activateDestination: false)
             }
@@ -420,7 +420,7 @@ final class FirstLaunchIntroduction {
                 context.duration = 0.16
                 brand?.animator().alphaValue = 0
             } completionHandler: {
-                MainActor.assumeIsolated {
+                MainActorCallback.perform {
                     brand?.orderOut(nil)
                     brand?.contentView = nil
                     brand?.close()

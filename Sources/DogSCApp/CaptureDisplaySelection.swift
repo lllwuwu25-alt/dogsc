@@ -30,7 +30,7 @@ final class CaptureDisplaySelector {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            MainActor.assumeIsolated {
+            MainActorCallback.perform {
                 self?.refreshConnectedDisplays(token: token)
             }
         }

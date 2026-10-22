@@ -121,7 +121,7 @@ final class RecorderMemoController: NSObject, ObservableObject, NSWindowDelegate
         screenObserver = NotificationCenter.default.addObserver(
             forName: NSApplication.didChangeScreenParametersNotification, object: nil, queue: .main
         ) { [weak self] _ in
-            MainActor.assumeIsolated { self?.constrainToScreen() }
+            MainActorCallback.perform { self?.constrainToScreen() }
         }
         return panel
     }

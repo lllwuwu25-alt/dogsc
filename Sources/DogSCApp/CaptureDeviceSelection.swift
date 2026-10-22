@@ -154,7 +154,7 @@ final class IOSDeviceCaptureSelector {
                 object: recorderWindow,
                 queue: .main
             ) { [weak self] _ in
-                MainActor.assumeIsolated { self?.updatePanel() }
+                MainActorCallback.perform { self?.updatePanel() }
             }
         }
     }

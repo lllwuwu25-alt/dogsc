@@ -51,7 +51,7 @@ final class RecorderPanelTransition {
             context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
             window.animator().alphaValue = opacity
         } completionHandler: {
-            MainActor.assumeIsolated { completion?() }
+            MainActorCallback.perform { completion?() }
         }
     }
 }

@@ -183,16 +183,25 @@ private final class EditorMarkerCardPresenter: ObservableObject {
             }
             return event
         }
-        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
-            Task { @MainActor in self?.dismiss() }
+        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self, weak panel] _ in
+            MainActorCallback.perform {
+                guard let self, let panel, self.panel === panel else { return }
+                self.dismiss()
+            }
         }
         for name in [NSWindow.didMoveNotification, NSWindow.didResizeNotification, NSWindow.willCloseNotification] {
-            observers.append(NotificationCenter.default.addObserver(forName: name, object: owner, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated { self?.dismiss() }
+            observers.append(NotificationCenter.default.addObserver(forName: name, object: owner, queue: .main) { [weak self, weak panel] _ in
+                MainActorCallback.perform {
+                    guard let self, let panel, self.panel === panel else { return }
+                    self.dismiss()
+                }
             })
         }
-        observers.append(NotificationCenter.default.addObserver(forName: NSApplication.didResignActiveNotification, object: nil, queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated { self?.dismiss() }
+        observers.append(NotificationCenter.default.addObserver(forName: NSApplication.didResignActiveNotification, object: nil, queue: .main) { [weak self, weak panel] _ in
+            MainActorCallback.perform {
+                guard let self, let panel, self.panel === panel else { return }
+                self.dismiss()
+            }
         })
     }
 

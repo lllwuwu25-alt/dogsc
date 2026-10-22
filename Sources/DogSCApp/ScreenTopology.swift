@@ -242,7 +242,7 @@ final class ScreenTopologyMonitor {
         ),
         scheduleStableRefresh: @escaping StableRefreshScheduler = { operation in
             RunLoop.main.perform {
-                MainActor.assumeIsolated {
+                MainActorCallback.perform {
                     operation()
                 }
             }
@@ -268,7 +268,7 @@ final class ScreenTopologyMonitor {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            MainActor.assumeIsolated {
+            MainActorCallback.perform {
                 self?.scheduleRefreshAfterScreenParametersChange()
             }
         }

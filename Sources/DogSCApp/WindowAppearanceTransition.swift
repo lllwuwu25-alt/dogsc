@@ -46,7 +46,7 @@ enum WindowAppearanceTransition {
                 context.timingFunction = CAMediaTimingFunction(controlPoints: 0.4, 0, 0.2, 1)
                 snapshot.animator().alphaValue = 0
             } completionHandler: {
-                MainActor.assumeIsolated { snapshot.removeFromSuperview() }
+                MainActorCallback.perform { snapshot.removeFromSuperview() }
             }
         }
     }

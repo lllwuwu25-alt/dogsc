@@ -319,9 +319,9 @@ final class FirstUseTourController {
         }
         observers.append(NotificationCenter.default.addObserver(forName: NSWindow.didBecomeKeyNotification, object: window, queue: .main) { [weak self] _ in
             MainActorCallback.perform {
-                    guard let self, self.observationGeneration == generation else { return }
-                    self.resume()
-                }
+                guard let self, self.observationGeneration == generation else { return }
+                self.resume()
+            }
         })
         for name in [NSApplication.didBecomeActiveNotification, NSApplication.didChangeScreenParametersNotification] {
             observers.append(NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in

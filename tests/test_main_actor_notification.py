@@ -22,3 +22,7 @@ class MainActorNotificationTests(unittest.TestCase):
             result = subprocess.run([str(executable)], capture_output=True, text=True, timeout=10)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertIn("Notification callback reached MainActor exactly once", result.stdout)
+            rejected = subprocess.run([str(executable), "--reject-background"],
+                capture_output=True, text=True, timeout=10)
+            self.assertNotEqual(rejected.returncode, 0)
+            self.assertIn("AppKit synchronous callback requires the main thread", rejected.stderr)

@@ -113,7 +113,7 @@ final class NativeTimelineHoverGuideNSView: NSView, EditorTimelineHoverLocationO
                 scrollObservation = NotificationCenter.default.addObserver(
                     forName: NSView.boundsDidChangeNotification, object: clipView, queue: .main
                 ) { [weak self] _ in
-                    MainActor.assumeIsolated { self?.updatePosition() }
+                    MainActorCallback.perform { self?.updatePosition() }
                 }
             }
         }
