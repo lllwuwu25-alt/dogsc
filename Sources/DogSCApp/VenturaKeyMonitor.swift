@@ -79,7 +79,7 @@ struct VenturaKeyMonitor: NSViewRepresentable {
             guard active, window != nil else { disconnect(); return }
             guard monitor == nil else { return }
             monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-                let handled = MainActor.assumeIsolated {
+                let handled = MainActorCallback.syncOnMainThread {
                     guard let self, self.active, let window = self.window,
                           event.window === window,
                           !(window.firstResponder is NSTextView),
